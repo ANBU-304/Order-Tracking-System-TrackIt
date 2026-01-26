@@ -1,38 +1,133 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+
+import { useAuth } from "./TrackIt/useAuth";
+import { AuthProvider } from "./TrackIt/AuthContext";
+
+import {Navigation} from "./TrackIt/Navigation";
 
 import Login from "./TrackIt/Login";
-import AdminDashboard from "./TrackIt/AdminDashboard";
-import ContactSupport from "./TrackIt/ContactSupport";
-import CustomerDashboard from "./TrackIt/CustomerDashboard";
-import DashboardRouter from "./TrackIt/DashboardRouter";
-import {HelpCenter} from "./TrackIt/HelpCenter";
-import Settings from "./TrackIt/Settings";
-import React from "react";
-import ReactDOM from "react-dom/client";
-import "./index.css";
 import {PublicTracking} from "./TrackIt/PublicTracking";
-import { AuthContext } from "./TrackIt/auth-context";
-import { SupportPortal } from "./TrackIt/SupportPortal";
-import { OrderDetails } from "./TrackIt/OrderDetails";
-function App() {
+import {OrderDetails} from "./TrackIt/OrderDetails";
+import DashboardRouter from "./TrackIt/DashboardRouter";
+
+import Profile from "./TrackIt/Profile";
+import {PersonalDetails} from "./TrackIt/PersonalDetails";
+import { ProfilePicture} from "./TrackIt/ProfilePicture";
+import ChangePassword from "./TrackIt/ChangePassword";
+import NotificationPreferences from "./TrackIt/NotificationPreferences";
+import Settings from "./TrackIt/Settings";
+
+import {HelpCenter} from "./TrackIt/HelpCenter";
+import ContactSupport from "./TrackIt/ContactSupport";
+import ReportIssue from "./TrackIt/ReportIssue";
+
+import { Toaster } from "sonner";
+import "./index.css";
+
+/* ---------- Protected Route ---------- */
+function ProtectedRoute({ children }) {
+  const { isAuthenticated } = useAuth();
+  return isAuthenticated ? children : <Navigate to="/login" replace />;
+}
+
+/* ---------- App Routes ---------- */
+function AppRoutes() {
   return (
-    <AuthContext.Provider value={AuthContext}>
-    <BrowserRouter>
+    <>
+      <Navigation />
+
       <Routes>
-        <Route path="/login" element={<Login />} />
-        <Route path="/admin" element={<AdminDashboard />} />
-        <Route path="/contact-support" element={<ContactSupport />} />
-        <Route path="/customer-dashboard" element={<CustomerDashboard />} />
-        <Route path="/dashboard/*" element={<DashboardRouter />} />
-        <Route path="/help" element={<HelpCenter />} />
-        <Route path="/settings" element={<Settings />} />
+        {/* Public Routes */}
         <Route path="/" element={<PublicTracking />} />
+        <Route path="/login" element={<Login />} />
         <Route path="/order/:id" element={<OrderDetails />} />
-        <Route path="/support-portal" element={<SupportPortal />} />
+        <Route path="/help" element={<HelpCenter />} />
+        <Route path="/support/contact" element={<ContactSupport />} />
+        <Route path="/support/report" element={<ReportIssue />} />
+
+        {/* Protected Routes */}
+        <Route
+          path="/dashboard/*"
+          element={
+            <ProtectedRoute>
+              <DashboardRouter />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <Profile />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/profile/details"
+          element={
+            <ProtectedRoute>
+              <PersonalDetails />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/profile/picture"
+          element={
+            <ProtectedRoute>
+              <ProfilePicture />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/profile/password"
+          element={
+            <ProtectedRoute>
+              <ChangePassword />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/profile/notifications"
+          element={
+            <ProtectedRoute>
+              <NotificationPreferences />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/settings"
+          element={
+            <ProtectedRoute>
+              <Settings />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Fallback */}
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
-    </BrowserRouter> 
-    </AuthContext.Provider> 
+
+      <Toaster position="top-right" />
+    </>
   );
 }
 
-export default App;
+/* ---------- App Wrapper ---------- */
+export default function App() {
+  return (
+    <Router>
+      <AuthProvider>
+        <div className="min-h-screen bg-background">
+          <AppRoutes />
+        </div>
+      </AuthProvider>
+    </Router>
+  );
+}

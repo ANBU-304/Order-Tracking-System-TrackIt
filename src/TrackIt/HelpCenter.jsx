@@ -91,50 +91,47 @@ export function HelpCenter() {
       icon: MessageCircle,
       title: "Live Chat",
       description: "Chat with our support team",
-      action: () => navigate("/contact-support"),
+      action: () => navigate("/support/contact"),
       color: "from-indigo-500 to-purple-500",
     },
     {
       icon: Mail,
       title: "Email Support",
       description: "Get help via email",
-      action: () => navigate("/contact-support"),
+      action: () => navigate("/support/contact"),
       color: "from-green-500 to-emerald-500",
     },
     {
       icon: Phone,
       title: "Phone Support",
       description: "Call us: 1-800-TRACKIT",
-      action: () => navigate("/contact-support"),
+      action: () => navigate("/support/contact"),
       color: "from-blue-500 to-cyan-500",
     },
     {
       icon: FileText,
       title: "Report an Issue",
       description: "Submit a detailed report",
-      action: () => navigate("/contact-support"),
+      action: () => navigate("/support/report"),
       color: "from-orange-500 to-red-500",
     },
   ];
 
   return (
-    <div className="min-h-[calc(100vh-4rem)] bg-gradient-to-br from-indigo-50 via-white to-purple-50 py-8">
-      <div className="max-w-5xl mx-auto px-4">
+    <div className="min-h-[calc(100vh-4rem)] bg-linear-to-br from-indigo-50 via-white to-purple-50 py-8">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="text-center mb-8">
-          <div className="w-16 h-16 gradient-primary rounded-2xl flex items-center justify-center mx-auto mb-4">
+        <div className="text-center mb-8 animate-slide-in">
+          <div className="w-16 h-16 gradient-primary rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
             <HelpCircle className="w-8 h-8 text-white" />
           </div>
-          <h1 className="mb-2 bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-            Help Center
-          </h1>
-          <p className="text-gray-600">
-            Find answers to common questions and get support
-          </p>
+          <h1 className="mb-2 bg-linear-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">Help Center</h1>
+          <p className="text-gray-600">Find answers to common questions and get support</p>
         </div>
 
-        {/* Search */}
-        <Card className="border-0 shadow-xl mb-8">
+        {/* Search Bar */}
+        <Card className="border-0 shadow-xl mb-8 overflow-hidden animate-scale-in">
+          <div className="absolute top-0 left-0 right-0 h-1 gradient-primary"></div>
           <CardContent className="pt-6">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -142,7 +139,7 @@ export function HelpCenter() {
                 placeholder="Search for help articles, FAQs, or topics..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 h-12"
+                className="pl-10 h-12 border-gray-200 focus:border-indigo-500 focus:ring-indigo-500"
               />
             </div>
           </CardContent>
@@ -153,66 +150,58 @@ export function HelpCenter() {
           {contactOptions.map((option, index) => (
             <Card
               key={index}
+              className="border-0 shadow-md hover:shadow-xl transition-all cursor-pointer group overflow-hidden animate-scale-in"
+              style={{ animationDelay: `${index * 0.1}s` }}
               onClick={option.action}
-              className="cursor-pointer shadow-md hover:shadow-xl transition-all"
             >
+              <div className={`absolute top-0 left-0 right-0 h-1 bg-linear-to-r ${option.color}`}></div>
               <CardContent className="pt-6 text-center">
-                <div
-                  className={`w-12 h-12 rounded-xl bg-gradient-to-br ${option.color} flex items-center justify-center mx-auto mb-3`}
-                >
+                <div className={`w-12 h-12 rounded-xl bg-linear-to-br ${option.color} flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform shadow-lg`}>
                   <option.icon className="w-6 h-6 text-white" />
                 </div>
-                <h3 className="font-semibold">{option.title}</h3>
-                <p className="text-sm text-gray-600">
-                  {option.description}
-                </p>
+                <h3 className="font-semibold mb-1 group-hover:text-indigo-600 transition-colors">{option.title}</h3>
+                <p className="text-sm text-gray-600">{option.description}</p>
               </CardContent>
             </Card>
           ))}
         </div>
 
-        {/* FAQ */}
-        {categories.map((category) => (
-          <Card key={category} className="shadow-xl mb-6">
+        {/* FAQ Sections */}
+        {categories.map((category, catIndex) => (
+          <Card key={category} className="border-0 shadow-xl mb-6 overflow-hidden animate-slide-in" style={{ animationDelay: `${catIndex * 0.1}s` }}>
+            <div className="absolute top-0 left-0 right-0 h-1 gradient-success"></div>
             <CardHeader>
               <CardTitle>{category}</CardTitle>
               <CardDescription>
-                {
-                  filteredFAQs.filter((faq) => faq.category === category)
-                    .length
-                }{" "}
-                articles
+                {filteredFAQs.filter(faq => faq.category === category).length} articles
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-2">
               {filteredFAQs
-                .filter((faq) => faq.category === category)
-                .map((faq, index) => {
-                  const isExpanded = expandedFAQ === index;
-
+                .filter(faq => faq.category === category)
+                .map((faq) => {
+                  const faqIndex = faqs.indexOf(faq);
+                  const isExpanded = expandedFAQ === faqIndex;
+                  
                   return (
                     <div
-                      key={index}
-                      className="border rounded-lg overflow-hidden"
+                      key={faqIndex}
+                      className="border border-gray-200 rounded-lg overflow-hidden hover:border-indigo-300 transition-colors"
                     >
                       <button
-                        onClick={() =>
-                          setExpandedFAQ(isExpanded ? null : index)
-                        }
-                        className="w-full px-4 py-3 flex justify-between items-center"
+                        onClick={() => setExpandedFAQ(isExpanded ? null : faqIndex)}
+                        className="w-full px-4 py-3 flex items-center justify-between hover:bg-gray-50 transition-colors"
                       >
-                        <span className="font-medium text-left">
-                          {faq.question}
-                        </span>
+                        <span className="font-medium text-left">{faq.question}</span>
                         {isExpanded ? (
-                          <ChevronUp className="w-5 h-5" />
+                          <ChevronUp className="w-5 h-5 text-gray-400 shrink-0" />
                         ) : (
-                          <ChevronDown className="w-5 h-5" />
+                          <ChevronDown className="w-5 h-5 text-gray-400 shrink-0" />
                         )}
                       </button>
                       {isExpanded && (
-                        <div className="px-4 py-3 bg-gray-50">
-                          <p>{faq.answer}</p>
+                        <div className="px-4 py-3 bg-gray-50 border-t border-gray-200 animate-slide-in">
+                          <p className="text-gray-700">{faq.answer}</p>
                         </div>
                       )}
                     </div>
@@ -221,6 +210,54 @@ export function HelpCenter() {
             </CardContent>
           </Card>
         ))}
+
+        {/* No Results */}
+        {filteredFAQs.length === 0 && searchTerm && (
+          <Card className="border-0 shadow-xl text-center py-12">
+            <CardContent>
+              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Search className="w-8 h-8 text-gray-400" />
+              </div>
+              <h3 className="font-semibold mb-2">No results found</h3>
+              <p className="text-gray-600 mb-4">
+                We couldn't find any articles matching "{searchTerm}"
+              </p>
+              <Button 
+                onClick={() => navigate('/support/contact')}
+                className="gradient-primary hover:opacity-90"
+              >
+                Contact Support
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Still Need Help */}
+        <Card className="border-0 shadow-xl overflow-hidden">
+          <div className="absolute top-0 left-0 right-0 h-1 gradient-info"></div>
+          <CardContent className="pt-6 text-center">
+            <h3 className="font-semibold mb-2">Still need help?</h3>
+            <p className="text-gray-600 mb-4">
+              Our support team is available 24/7 to assist you
+            </p>
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              <Button 
+                onClick={() => navigate('/support/contact')}
+                className="gradient-primary hover:opacity-90"
+              >
+                <MessageCircle className="w-4 h-4 mr-2" />
+                Contact Support
+              </Button>
+              <Button 
+                variant="outline"
+                onClick={() => navigate('/support/report')}
+              >
+                <FileText className="w-4 h-4 mr-2" />
+                Report an Issue
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

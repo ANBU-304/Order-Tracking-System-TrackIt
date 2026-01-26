@@ -73,11 +73,10 @@ export function PaymentModal({ amount, orderId, onClose, onSuccess }) {
     }, 2000);
   };
 
-  /* SUCCESS SCREEN */
   if (showSuccess) {
     return (
       <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-        <Card className="max-w-md w-full shadow-2xl">
+        <Card className="sticky top-0 bg-white border-b p-4  justify-between max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-2xl  ">
           <CardContent className="pt-8 text-center">
             <div className="w-20 h-20 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-6">
               <CheckCircle2 className="w-10 h-10 text-white" />
@@ -92,10 +91,9 @@ export function PaymentModal({ amount, orderId, onClose, onSuccess }) {
     );
   }
 
-  /* MAIN MODAL */
   return (
     <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-      <Card className="max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
+      <Card className="sticky top-0 bg-white border-b p-4  justify-between max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-2xl  ">
         {/* Header */}
         <div className="sticky top-0 bg-white border-b p-4 flex justify-between">
           <div>
@@ -111,7 +109,7 @@ export function PaymentModal({ amount, orderId, onClose, onSuccess }) {
           {/* Amount */}
           <div className="mb-6 p-4 bg-indigo-50 rounded-lg">
             <p className="text-sm text-gray-600">Amount to Pay</p>
-            <p className="text-3xl font-bold text-indigo-600">
+            <p className="text-3xl font-bold bg-linear-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
               ₹{amount.toFixed(2)}
             </p>
           </div>
@@ -203,10 +201,10 @@ export function PaymentModal({ amount, orderId, onClose, onSuccess }) {
 
           {/* Buttons */}
           <div className="mt-6 flex gap-3">
-            <Button variant="outline" onClick={onClose}>
+            <Button variant="outline" onClick={onClose} className="border-red-500 text-red-600 hover:bg-red-50 hover:text-red-700 hover:border-red-600">
               Cancel
             </Button>
-            <Button onClick={handlePayment} disabled={isProcessing}>
+            <Button onClick={handlePayment} disabled={isProcessing}  className="bg-green-600 hover:bg-green-700 text-white">
               {isProcessing ? "Processing..." : `Pay ₹${amount.toFixed(2)}`}
             </Button>
           </div>
