@@ -1,27 +1,16 @@
 import { useState } from "react";
 import {
-  TrendingUp,
-  TrendingDown,
-  Package,
   Clock,
   AlertTriangle,
   CheckCircle2,
   Truck,
   BarChart3,
-  Bell,
-  MapPin,
-  ChevronRight,
-  Eye,
-  MessageSquare,
-  Calendar,
-  DollarSign,
-  Search
+ 
 } from "lucide-react";
 
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle
 } from "./ui/Card";

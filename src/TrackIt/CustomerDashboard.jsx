@@ -12,15 +12,15 @@ import { Progress } from './ui/Progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { Layout } from './Layout';
 
-// Mock Invoice Utilities
+
 import { InvoicePreview } from "./InvoicePreview";
 import { generateSampleInvoice } from "./invoiceUtils";
 
 const mockOrders = [
-  { id: 'ORD-2024-001', status: 'out_for_delivery', carrier: 'FedEx Express', estimatedDelivery: 'Today by 8:00 PM', progress: 75, items: 'Electronics Package', trackingNumber: 'TRK123456789' },
+  { id: 'ORD-2025-001', status: 'out_for_delivery', carrier: 'FedEx Express', estimatedDelivery: 'Today by 8:00 PM', progress: 75, items: 'Electronics Package', trackingNumber: 'TRK123456789' },
   { id: 'ORD-2024-002', status: 'in_transit', carrier: 'UPS Ground', estimatedDelivery: 'Jan 5, 2026', progress: 45, items: 'Books (3 items)', trackingNumber: 'TRK987654321' },
   { id: 'ORD-2023-158', status: 'delivered', carrier: 'USPS Priority', estimatedDelivery: 'Delivered Dec 28', progress: 100, items: 'Clothing', trackingNumber: 'TRK456789123' },
-  { id: 'ORD-2024-003', status: 'exception', carrier: 'FedEx Ground', estimatedDelivery: 'Delayed - Jan 6', progress: 30, items: 'Furniture', trackingNumber: 'TRK321654987' }
+  { id: 'ORD-2026-003', status: 'exception', carrier: 'FedEx Ground', estimatedDelivery: 'Delayed - Jan 6', progress: 30, items: 'Furniture', trackingNumber: 'TRK321654987' }
 ];
 
 const getStatusConfig = (status) => {
@@ -68,7 +68,7 @@ export function CustomerDashboard() {
           {/* Header Section */}
           <div className="mb-10">
             <h1 className="text-4xl font-black text-slate-900 tracking-tighter uppercase">
-              Operational <span className="text-yellow-500">Dashboard</span>
+              Customer <span className="text-yellow-500">Dashboard</span>
             </h1>
             <p className="text-slate-500 font-bold uppercase tracking-widest text-[10px] mt-2">
               Logistics Control / {new Date().getFullYear()} Global Systems

@@ -44,7 +44,7 @@ export function PublicTracking() {
       setTimeout(() => {
         setIsSearching(false);
         navigate(`/order/${trackingNumber}`);
-      }, 800);
+      }, 500);
     }
   };
 
@@ -225,8 +225,8 @@ export function PublicTracking() {
           
           {/* How It Works Section */}
           <Card className="border-0 shadow-xl mb-20 overflow-hidden ring-1 ring-gray-100">
-            <div className="bg-slate-900 py-6">
-              <CardTitle className="text-center text-3xl text-yellow-400">How It Works</CardTitle>
+            <div className="bg-yellow-50 py-6">
+              <CardTitle className="text-center text-3xl text-black-400">How It Works</CardTitle>
             </div>
             <CardContent className="pt-12 pb-12 bg-white">
               <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
@@ -274,8 +274,8 @@ export function PublicTracking() {
 
                 <div className="text-center group">
                   <div className="relative mx-auto mb-4">
-                    <div className="w-20 h-20 bg-yellow-50 rounded-2xl flex items-center justify-center group-hover:bg-yellow-100 transition-colors shadow-sm">
-                      <div className="w-14 h-14 bg-slate-900 rounded-xl flex items-center justify-center text-yellow-400 shadow-md">
+                    <div className="w-20 h-20  bg-yellow-50  rounded-2xl flex items-center justify-center group-hover:bg-yellow-100 transition-colors shadow-sm">
+                      <div className="w-14 h-14 bg-yellow-50 rounded-xl flex items-center justify-center text-yellow-400 shadow-md">
                         <CheckCircle2 className="w-8 h-8" />
                       </div>
                     </div>
