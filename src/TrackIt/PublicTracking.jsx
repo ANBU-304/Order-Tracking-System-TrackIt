@@ -8,12 +8,12 @@ import { useNavigate } from 'react-router-dom';
 export function PublicTracking() {
   const [trackingNumber, setTrackingNumber] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
-  const [trackMethod, setTrackMethod] = useState('orderid'); // orderid, mobilenumber
+  const [trackMethod, setTrackMethod] = useState('orderid');
   const [isSearching, setIsSearching] = useState(false);
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
 
-  // Define testimonials array here
+
   const testimonials = [
     {
       name: 'Sarah Johnson',
@@ -427,7 +427,7 @@ export function PublicTracking() {
               <h4 className="text-sm font-bold uppercase tracking-widest text-yellow-400 mb-6">Support</h4>
               <ul className="space-y-4">
                 <li><a href="/help" className="text-slate-400 hover:text-white transition-colors">Help Center</a></li>
-                <li><a href="#" className="text-slate-400 hover:text-white transition-colors">FAQ</a></li>
+                <li><a href="/help" className="text-slate-400 hover:text-white transition-colors">FAQ</a></li>
                 <li><a href="#" className="text-slate-400 hover:text-white transition-colors">Contact Us</a></li>
                 <li><a href="#" className="text-slate-400 hover:text-white transition-colors">Shipping Info</a></li>
                 <li><a href="#" className="text-slate-400 hover:text-white transition-colors">Privacy Policy</a></li>

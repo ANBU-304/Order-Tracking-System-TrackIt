@@ -143,6 +143,34 @@ export function OrderDetails() {
               </CardContent>
             </Card>
 
+ {/* Map Placeholder */}
+            <Card className="shadow-xl border-0">
+              <CardHeader>
+                <CardTitle>Package Location</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="w-full h-64 bg-gradient-to-br from-yelow-100 via-yellow-50 rounded-xl flex items-center justify-center relative overflow-hidden">
+                  <div className="absolute inset-0 opacity-10">
+                    <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+                      <path d="M0,50 Q25,30 50,50 T100,50" stroke="#6366F1" strokeWidth="0.5" fill="none" />
+                      <path d="M0,60 Q25,40 50,60 T100,60" stroke="#6366F1" strokeWidth="0.5" fill="none" />
+                      <path d="M20,0 L20,100" stroke="#6366F1" strokeWidth="0.5" />
+                      <path d="M40,0 L40,100" stroke="#6366F1" strokeWidth="0.5" />
+                      <path d="M60,0 L60,100" stroke="#6366F1" strokeWidth="0.5" />
+                      <path d="M80,0 L80,100" stroke="#6366F1" strokeWidth="0.5" />
+                    </svg>
+                  </div>
+                  <div className="relative z-10 text-center">
+                    <div className="w-16 h-16 gradient-primary rounded-full flex items-center justify-center mx-auto mb-3 animate-bounce shadow-lg">
+                      <MapPin className="w-8 h-8 text-white" />
+                    </div>
+                    <p className="text-indigo-600 font-semibold text-lg">San Francisco, CA</p>
+                    <p className="text-sm text-gray-600">Last updated: 8:30 AM</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            
             <Card className="border-slate-200 shadow-sm">
               <CardHeader>
                 <CardTitle className="text-lg">Shipment Journey</CardTitle>
