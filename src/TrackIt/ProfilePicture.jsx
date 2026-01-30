@@ -1,7 +1,6 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Upload, Camera, Trash2 } from "lucide-react";
+import { ArrowLeft, Upload, Camera, Trash2, ShieldCheck, Image as ImageIcon } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/Card";
 import { Button } from "./ui/Button";
 import { useAuth } from "./useAuth";
@@ -38,79 +37,89 @@ export function ProfilePicture() {
   };
 
   const handleSave = () => {
-    toast.success("Profile picture updated successfully!");
+    toast.success("Identity profile updated in terminal database");
     setTimeout(() => navigate("/profile"), 500);
   };
 
   const handleRemove = () => {
     setSelectedImage(null);
-    toast.success("Profile picture removed");
+    toast.success("Profile image cleared");
   };
 
   return (
-    <div className="min-h-[calc(100vh-4rem)] bg-gradient-to-br from-indigo-50 via-white to-purple-50 py-8">
+    <div className="min-h-screen bg-slate-50 py-12">
       <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
 
-        {/* Back Button */}
+        {/* Themed Back Button */}
         <button
           onClick={() => navigate("/profile")}
-          className="flex items-center gap-2 text-gray-600 hover:text-indigo-600 mb-6 transition-colors"
+          className="flex items-center gap-2 text-slate-500 font-bold uppercase tracking-widest text-[10px] hover:text-slate-900 mb-8 transition-colors group"
         >
-          <ArrowLeft className="w-5 h-5" />
-          <span>Back to Profile</span>
+          <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+          <span>Return to Command Center</span>
         </button>
 
-        {/* Header */}
-        <div className="mb-6 animate-slide-in">
-          <h1 className="mb-2 bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-            Profile Picture
+        {/* Header Section */}
+        <div className="mb-10">
+          <h1 className="text-4xl font-black text-slate-900 tracking-tighter uppercase mb-2">
+            Identity <span className="text-yellow-500">Image</span>
           </h1>
-          <p className="text-gray-600">Upload or change your profile picture</p>
+          <p className="text-slate-500 font-bold uppercase tracking-widest text-[10px]">
+            Security Protocol / Upload biometric identification
+          </p>
         </div>
 
-        {/* Current Picture */}
-        <Card className="border-0 shadow-xl mb-6 overflow-hidden animate-scale-in">
-          <div className="absolute top-0 left-0 right-0 h-1 gradient-primary"></div>
-          <CardHeader>
-            <CardTitle className="">Current Picture</CardTitle>
-            <CardDescription className="">
-              This is how others will see you
+        {/* Current Picture Status */}
+        <Card className="border-none shadow-sm mb-6 overflow-hidden bg-white rounded-2xl relative">
+          <div className="absolute top-0 left-0 right-0 h-1.5 bg-slate-900"></div>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-black uppercase tracking-tight text-slate-900">Active Visual ID</CardTitle>
+            <CardDescription className="text-[10px] font-bold uppercase text-slate-400">
+              Current state of your digital identity
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="flex flex-col items-center">
+            <div className="flex flex-col items-center py-4">
               {selectedImage ? (
                 <div className="relative group">
                   <img
                     src={selectedImage}
                     alt="Profile"
-                    className="w-32 h-32 rounded-full object-cover shadow-lg"
+                    className="w-40 h-40 rounded-2xl object-cover shadow-2xl ring-4 ring-slate-100"
                   />
                   <button
                     onClick={handleRemove}
-                    className="absolute top-0 right-0 w-10 h-10 bg-red-500 rounded-full shadow-lg flex items-center justify-center hover:bg-red-600 transition-colors opacity-0 group-hover:opacity-100"
+                    className="absolute -top-3 -right-3 w-10 h-10 bg-red-600 text-white rounded-xl shadow-lg flex items-center justify-center hover:bg-red-700 transition-all scale-0 group-hover:scale-100"
                   >
-                    <Trash2 className="w-5 h-5 text-white" />
+                    <Trash2 className="w-5 h-5" />
                   </button>
                 </div>
               ) : (
-                <div className="w-32 h-32 rounded-full gradient-primary flex items-center justify-center text-white shadow-lg text-4xl font-bold">
-                  {user?.name?.split(" ").map((n) => n[0]).join("")}
+                <div className="w-40 h-40 rounded-2xl bg-slate-900 flex flex-col items-center justify-center text-yellow-400 shadow-xl ring-4 ring-slate-100">
+                  <span className="text-5xl font-black mb-1">
+                    {user?.name?.split(" ").map((n) => n[0]).join("")}
+                  </span>
+                  <p className="text-[8px] font-black uppercase tracking-[0.2em] text-yellow-600/50">System Initials</p>
                 </div>
               )}
-              <p className="mt-4 font-semibold text-gray-900">{user?.name}</p>
-              <p className="text-sm text-gray-600">{user?.email}</p>
+              <div className="mt-6 flex flex-col items-center">
+                <div className="flex items-center gap-2 mb-1">
+                    <h3 className="font-black text-slate-900 uppercase tracking-tight text-lg">{user?.name}</h3>
+                    <ShieldCheck className="w-4 h-4 text-yellow-500" />
+                </div>
+                <p className="text-xs font-mono text-slate-400">{user?.email}</p>
+              </div>
             </div>
           </CardContent>
         </Card>
 
-        {/* Upload Section */}
-        <Card className="border-0 shadow-xl mb-6 overflow-hidden">
-          <div className="absolute top-0 left-0 right-0 h-1 gradient-success"></div>
-          <CardHeader>
-            <CardTitle className="">Upload New Picture</CardTitle>
-            <CardDescription className="">
-              JPG, PNG or GIF. Max size 5MB
+        {/* Terminal Upload Section */}
+        <Card className="border-none shadow-sm mb-8 overflow-hidden bg-white rounded-2xl relative">
+          <div className="absolute top-0 left-0 right-0 h-1.5 bg-yellow-500"></div>
+          <CardHeader className="pb-4">
+            <CardTitle className="text-sm font-black uppercase tracking-tight text-slate-900">New Image Data</CardTitle>
+            <CardDescription className="text-[10px] font-bold uppercase text-slate-400">
+              Accepted formats: JPG, PNG, GIF / Max size: 5.0MB
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -121,10 +130,10 @@ export function ProfilePicture() {
               }}
               onDragLeave={() => setIsDragging(false)}
               onDrop={handleDrop}
-              className={`border-2 border-dashed rounded-xl p-8 text-center transition-colors ${
+              className={`border-2 border-dashed rounded-2xl p-10 text-center transition-all ${
                 isDragging
-                  ? "border-indigo-500 bg-indigo-50"
-                  : "border-gray-300 hover:border-indigo-400 hover:bg-gray-50"
+                  ? "border-yellow-500 bg-yellow-50/50"
+                  : "border-slate-200 hover:border-yellow-400 hover:bg-slate-50/50"
               }`}
             >
               <input
@@ -135,50 +144,49 @@ export function ProfilePicture() {
                 onChange={handleFileSelect}
               />
               <label htmlFor="file-upload" className="cursor-pointer">
-                <div className="w-16 h-16 gradient-primary rounded-2xl flex items-center justify-center mx-auto mb-4">
-                  <Upload className="w-8 h-8 text-white" />
+                <div className="w-20 h-20 bg-slate-900 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg group-hover:scale-110 transition-transform">
+                  <Upload className="w-8 h-8 text-yellow-400" />
                 </div>
-                <p className="font-semibold text-gray-900 mb-1">
+                <p className="font-black text-slate-900 uppercase text-xs tracking-widest mb-2">
                   {isDragging
-                    ? "Drop your image here"
-                    : "Click to upload or drag and drop"}
+                    ? "Release to Import Data"
+                    : "Select File or Drag & Drop"}
                 </p>
-                <p className="text-sm text-gray-600">
-                  Supported formats: JPG, PNG, GIF
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">
+                  Local Terminal Import
                 </p>
               </label>
             </div>
 
-            {/* Camera Option */}
-            <div className="mt-4">
+            <div className="mt-6">
               <Button
                 variant="outline"
-                className="w-full"
-                onClick={() => toast.info("Camera feature coming soon!")}
+                className="w-full border-slate-200 text-slate-600 font-bold uppercase text-[10px] tracking-widest h-12 rounded-xl"
+                onClick={() => toast.info("Terminal camera access restricted for maintenance")}
               >
                 <Camera className="w-4 h-4 mr-2" />
-                Take a Photo
+                Initiate Terminal Camera
               </Button>
             </div>
           </CardContent>
         </Card>
 
-        {/* Action Buttons */}
-        <div className="flex flex-col sm:flex-row gap-3">
+        {/* Global Action Buttons */}
+        <div className="flex flex-col sm:flex-row gap-4">
           <Button
             variant="outline"
-            className="flex-1"
+            className="flex-1 border-slate-200 text-slate-500 font-bold uppercase text-[10px] tracking-widest h-14 rounded-xl"
             onClick={() => navigate("/profile")}
           >
-            Cancel
+            Abort Changes
           </Button>
           <Button
-            className="flex-1 gradient-primary hover:opacity-90"
+            className="flex-1 bg-slate-900 text-yellow-400 hover:bg-slate-800 font-black uppercase text-[10px] tracking-widest h-14 rounded-xl shadow-xl shadow-slate-200 disabled:opacity-50"
             onClick={handleSave}
             disabled={!selectedImage}
           >
-            <Upload className="w-4 h-4 mr-2" />
-            Save Picture
+            <ImageIcon className="w-4 h-4 mr-2" />
+            Commit Image to Database
           </Button>
         </div>
 

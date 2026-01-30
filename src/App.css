@@ -1,84 +1,107 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
-/* your full CSS continues... */
-
+/* --- Tailwind v4 Custom Variant --- */
 @custom-variant dark (&:is(.dark *));
 
 :root {
   --font-size: 16px;
-  --background: #F8FAFC;
-  --foreground: #0F172A;
+  
+  /* Background & Base */
+  --background: #FFFDF5; /* Soft Cream */
+  --foreground: #451a03; /* Deep Brown for maximum contrast */
+  
+  /* Cards & Popovers */
   --card: #ffffff;
-  --card-foreground: #0F172A;
+  --card-foreground: #451a03;
   --popover: #ffffff;
-  --popover-foreground: #0F172A;
-  --primary: #6366F1;
-  --primary-foreground: #ffffff;
-  --secondary: #F1F5F9;
-  --secondary-foreground: #0F172A;
-  --muted: #F1F5F9;
-  --muted-foreground: #64748B;
-  --accent: #10B981;
+  --popover-foreground: #451a03;
+  
+  /* Primary: High-Energy Yellow */
+  --primary: #FACC15; 
+  --primary-foreground: #422006; /* Dark brown text for legibility */
+  
+  /* Secondary & Muted: Warm Ambers */
+  --secondary: #FEF3C7;
+  --secondary-foreground: #92400e;
+  --muted: #FDE68A;
+  --muted-foreground: #92400e;
+  
+  /* Action Colors */
+  --accent: #F59E0B;
   --accent-foreground: #ffffff;
   --destructive: #EF4444;
   --destructive-foreground: #ffffff;
-  --warning: #F59E0B;
-  --warning-foreground: #ffffff;
+  --warning: #fbbf24;
+  --warning-foreground: #451a03;
   --success: #10B981;
   --success-foreground: #ffffff;
   --info: #3B82F6;
   --info-foreground: #ffffff;
-  --border: rgba(0, 0, 0, 0.08);
+  
+  /* Borders & Inputs */
+  --border: rgba(120, 53, 15, 0.12);
   --input: transparent;
   --input-background: #ffffff;
-  --switch-background: #CBD5E1;
+  --switch-background: #FDE68A;
+  --ring: #FACC15;
+  
+  /* Typography Weights */
   --font-weight-medium: 500;
   --font-weight-normal: 400;
-  --ring: #6366F1;
-  --chart-1: #6366F1;
-  --chart-2: #10B981;
-  --chart-3: #F59E0B;
-  --chart-4: #EC4899;
-  --chart-5: #8B5CF6;
+  
+  /* Charts - Warm Sun Palette */
+  --chart-1: #FACC15;
+  --chart-2: #F59E0B;
+  --chart-3: #D97706;
+  --chart-4: #B45309;
+  --chart-5: #78350F;
+  
   --radius: 0.75rem;
+  
+  /* Sidebar */
   --sidebar: #ffffff;
-  --sidebar-foreground: #0F172A;
-  --sidebar-primary: #6366F1;
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #F1F5F9;
-  --sidebar-accent-foreground: #0F172A;
-  --sidebar-border: #E2E8F0;
-  --sidebar-ring: #6366F1;
+  --sidebar-foreground: #451a03;
+  --sidebar-primary: #FACC15;
+  --sidebar-primary-foreground: #422006;
+  --sidebar-accent: #FEF3C7;
+  --sidebar-accent-foreground: #92400e;
+  --sidebar-border: #FDE68A;
+  --sidebar-ring: #FACC15;
 }
 
 .dark {
-  --background: #0F172A;
-  --foreground: #F8FAFC;
-  --card: #1E293B;
-  --card-foreground: #F8FAFC;
-  --popover: #1E293B;
-  --popover-foreground: #F8FAFC;
-  --primary: #818CF8;
-  --primary-foreground: #ffffff;
-  --secondary: #334155;
-  --secondary-foreground: #F8FAFC;
-  --muted: #334155;
-  --muted-foreground: #94A3B8;
-  --accent: #34D399;
-  --accent-foreground: #ffffff;
+  /* Warm Dark Stone Theme */
+  --background: #1C1917; 
+  --foreground: #FEF3C7;
+  --card: #292524;
+  --card-foreground: #FEF3C7;
+  --popover: #292524;
+  --popover-foreground: #FEF3C7;
+  
+  --primary: #FDE047;
+  --primary-foreground: #451a03;
+  
+  --secondary: #44403c;
+  --secondary-foreground: #FEF3C7;
+  --muted: #44403c;
+  --muted-foreground: #a8a29e;
+  
+  --accent: #FACC15;
+  --accent-foreground: #451a03;
   --destructive: #F87171;
   --destructive-foreground: #ffffff;
-  --border: rgba(255, 255, 255, 0.1);
-  --input: rgba(255, 255, 255, 0.1);
-  --ring: #818CF8;
-  --sidebar: #1E293B;
-  --sidebar-foreground: #F8FAFC;
-  --sidebar-primary: #818CF8;
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #334155;
-  --sidebar-accent-foreground: #F8FAFC;
-  --sidebar-border: #334155;
-  --sidebar-ring: #818CF8;
+  --border: rgba(254, 243, 199, 0.1);
+  --input: rgba(254, 243, 199, 0.1);
+  --ring: #FDE047;
+  
+  --sidebar: #292524;
+  --sidebar-foreground: #FEF3C7;
+  --sidebar-primary: #FDE047;
+  --sidebar-primary-foreground: #451a03;
+  --sidebar-accent: #44403c;
+  --sidebar-accent-foreground: #FEF3C7;
+  --sidebar-border: #44403c;
+  --sidebar-ring: #FDE047;
 }
 
 @theme inline {
@@ -141,9 +164,6 @@
   }
 }
 
-/**
- * Base typography. This is not applied to elements which have an ancestor with a Tailwind text class.
- */
 @layer base {
   :where(:not(:has([class*=' text-']), :not(:has([class^='text-'])))) {
     h1 {
@@ -170,13 +190,7 @@
       line-height: 1.5;
     }
 
-    label {
-      font-size: var(--text-base);
-      font-weight: var(--font-weight-medium);
-      line-height: 1.5;
-    }
-
-    button {
+    label, button {
       font-size: var(--text-base);
       font-weight: var(--font-weight-medium);
       line-height: 1.5;
@@ -194,62 +208,29 @@ html {
   font-size: var(--font-size);
 }
 
-/* Custom animations */
+/* --- Animations --- */
 @keyframes slideIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 @keyframes scaleIn {
-  from {
-    opacity: 0;
-    transform: scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
 }
 
-@keyframes shimmer {
-  0% {
-    background-position: -1000px 0;
-  }
-  100% {
-    background-position: 1000px 0;
-  }
-}
+.animate-slide-in { animation: slideIn 0.4s ease-out; }
+.animate-fade-in { animation: fadeIn 0.3s ease-out; }
+.animate-scale-in { animation: scaleIn 0.3s ease-out; }
 
-.animate-slide-in {
-  animation: slideIn 0.4s ease-out;
-}
-
-.animate-fade-in {
-  animation: fadeIn 0.3s ease-out;
-}
-
-.animate-scale-in {
-  animation: scaleIn 0.3s ease-out;
-}
-
-/* Gradient backgrounds */
+/* --- Gradients (Sun-Drenched) --- */
 .gradient-primary {
-  background: linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%);
+  background: linear-gradient(135deg, #FDE047 0%, #F59E0B 100%);
 }
 
 .gradient-success {
@@ -257,37 +238,37 @@ html {
 }
 
 .gradient-warning {
-  background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+  background: linear-gradient(135deg, #FBBF24 0%, #D97706 100%);
 }
 
 .gradient-info {
-  background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+  background: linear-gradient(135deg, #60A5FA 0%, #2563EB 100%);
 }
 
-/* Glassmorphism effect */
+/* Glassmorphism */
 .glass {
-  background: rgba(255, 255, 255, 0.7);
+  background: rgba(255, 255, 255, 0.4);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
-/* Custom scrollbar */
+/* --- Custom Yellow Scrollbar --- */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #F1F5F9;
+  background: #FEF3C7;
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #CBD5E1;
+  background: #FACC15;
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #94A3B8;
+  background: #EAB308;
 }

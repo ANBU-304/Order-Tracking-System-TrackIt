@@ -13,7 +13,7 @@ import { Button } from "./ui/Button";
 import { Input } from "./ui/Input";
 import { Label } from "./ui/Label";
 import { Separator } from "./ui/Separator";
-import { toast } from "sonner";
+
 
 export function PaymentModal({ amount, orderId, onClose, onSuccess }) {
   const [selectedMethod, setSelectedMethod] = useState("upi");
@@ -62,12 +62,12 @@ export function PaymentModal({ amount, orderId, onClose, onSuccess }) {
 
   const handlePayment = async () => {
     setIsProcessing(true);
-    await new Promise((r) => setTimeout(r, 2000));
+    await new Promise((r) => setTimeout(r, 1000));
     setIsProcessing(false);
     setShowSuccess(true);
 
     setTimeout(() => {
-      toast.success("Payment successful!");
+      
       onSuccess();
       onClose();
     }, 2000);
@@ -109,7 +109,7 @@ export function PaymentModal({ amount, orderId, onClose, onSuccess }) {
           {/* Amount */}
           <div className="mb-6 p-4 bg-indigo-50 rounded-lg">
             <p className="text-sm text-gray-600">Amount to Pay</p>
-            <p className="text-3xl font-bold bg-linear-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+            <p className="text-3xl font-bold bg-linear-to-r from-yellow-600 to-yellow-600 bg-clip-text text-transparent">
               ₹{amount.toFixed(2)}
             </p>
           </div>
@@ -122,7 +122,7 @@ export function PaymentModal({ amount, orderId, onClose, onSuccess }) {
                 onClick={() => setSelectedMethod(m.id)}
                 className={`p-4 rounded-xl border-2 ${
                   selectedMethod === m.id
-                    ? "border-indigo-500 bg-indigo-50"
+                    ? "border-yellow-500 bg-yellow-50"
                     : "border-gray-200"
                 }`}
               >
@@ -183,7 +183,7 @@ export function PaymentModal({ amount, orderId, onClose, onSuccess }) {
                   onClick={() => setSelectedBank(bank)}
                   className={`block w-full p-3 border rounded-lg ${
                     selectedBank === bank
-                      ? "border-indigo-500 bg-indigo-50"
+                      ? "border-yellow-500 bg-yellow-50"
                       : "border-gray-200"
                   }`}
                 >
@@ -193,11 +193,7 @@ export function PaymentModal({ amount, orderId, onClose, onSuccess }) {
             </div>
           )}
 
-          {/* Security */}
-          <div className="mt-6 flex items-center justify-center gap-2 text-sm">
-            <Shield className="text-green-600 w-4 h-4" />
-            Secured by 256-bit SSL
-          </div>
+        
 
           {/* Buttons */}
           <div className="mt-6 flex gap-3">

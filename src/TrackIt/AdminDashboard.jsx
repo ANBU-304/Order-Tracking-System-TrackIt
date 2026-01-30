@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import {
   TrendingUp,
   TrendingDown,
@@ -9,18 +8,7 @@ import {
   CheckCircle2,
   Truck,
   BarChart3,
-  User,
-  Settings,
-  HelpCircle,
-  LogOut,
-  Download,
-  Filter,
-  RefreshCw,
-  Shield,
   Bell,
-  Users,
-  Database,
-  FileText,
   MapPin,
   ChevronRight,
   Eye,
@@ -48,8 +36,6 @@ import {
 import {
   BarChart,
   Bar,
-  LineChart,
-  Line,
   PieChart,
   Pie,
   Cell,
@@ -58,17 +44,14 @@ import {
   CartesianGrid,
   Tooltip,
   Legend,
-  ResponsiveContainer,
-  AreaChart,
-  Area
+  ResponsiveContainer
 } from "recharts";
 
 import { Button } from "./ui/Button";
 import { Badge } from "./ui/Badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/Select";
-import { Input } from "./ui/Input";
+import { Layout } from "./Layout";
 
-// Mock Data - All in one file
+// Data Constants
 const deliveryPerformanceData = [
   { month: 'Jan', onTime: 92, delayed: 8 },
   { month: 'Feb', onTime: 94, delayed: 6 },
@@ -87,10 +70,10 @@ const carrierPerformanceData = [
 ];
 
 const orderStatusData = [
-  { name: 'In Transit', value: 1560, color: '#F59E0B' },
-  { name: 'Out for Delivery', value: 890, color: '#3B82F6' },
-  { name: 'Delivered', value: 4230, color: '#10B981' },
-  { name: 'Exception', value: 120, color: '#EF4444' },
+  { name: 'In Transit', value: 1560, color: '#facc15' }, 
+  { name: 'Out for Delivery', value: 890, color: '#64748b' }, 
+  { name: 'Delivered', value: 4230, color: '#0f172a' }, 
+  { name: 'Exception', value: 120, color: '#ef4444' }, 
 ];
 
 const regionData = [
@@ -100,357 +83,117 @@ const regionData = [
   { region: 'Middle East', orders: 520, percentage: 6, countries: 12 },
 ];
 
-
-
-const COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6'];
+const COLORS = ['#0f172a', '#facc15', '#475569', '#94a3b8', '#e2e8f0'];
 
 export default function AdminDashboard() {
-  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("overview");
 
   const onTimeRate = 94;
   const avgDeliveryTime = 2.4;
-
-
   const activeShipments = orderStatusData.find((d) => d.name === "In Transit")?.value || 0;
   const exceptions = orderStatusData.find((d) => d.name === "Exception")?.value || 0;
 
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50/30">
+    <div className="min-h-screen bg-slate-50">
       <div className="flex">
-        {/* Admin Sidebar */}
-        <div className="hidden lg:block w-72 bg-white/80 backdrop-blur-sm border-r border-slate-200/80 sticky top-0 h-screen">
-          <div className="p-8">
-            {/* Admin Profile */}
-            <div className="flex items-center gap-3 mb-10 p-5 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-2xl border border-indigo-100">
-              <div>
-                <p className="font-bold text-slate-900">Admin User</p>
-                <p className="text-sm text-slate-600">System Administrator</p>
-              </div>
-            </div>
+        <Layout />
 
-            {/* Navigation */}
-            <nav className="space-y-2 mb-10">
-              <NavItem icon={BarChart3} label="Dashboard" active onClick={() => navigate('/admin')} />
-              
-              <NavItem icon={Settings} label="Settings" onClick={() => navigate('/admin/settings')} />
-            </nav>
-
-            {/* Logout */}
-            <div className="mt-10">
-              <Button
-                onClick={() => navigate('/login')}
-                variant="outline"
-                className="w-full border-red-200 hover:bg-red-50 hover:text-red-600 text-slate-700 rounded-xl"
-              >
-                <LogOut className="w-5 h-5 mr-3" />
-                Logout
-              </Button>
-            </div>
-          </div>
-        </div>
-
-        {/* Main Content */}
-        <div className="flex-1 overflow-auto">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="flex-1 overflow-auto px-5">
+          <div className="w-full py-8">
             {/* Header */}
             <div className="mb-8">
-              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-8">
+              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-4">
                 <div>
-                  <h1 className="text-3xl lg:text-4xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                  <h1 className="text-3xl lg:text-4xl font-bold text-slate-900">
                     Admin Analytics Dashboard
                   </h1>
-                  <p className="text-slate-600 mt-2">Real-time insights and performance metrics across your logistics network</p>
+                  <p className="text-slate-500 mt-2">Real-time logistics performance network</p>
                 </div>
-                <div className="flex items-center gap-3">
-                  <div className="relative">
-                    <Bell className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-                    <Button variant="outline" className="pl-10 rounded-xl border-slate-200">
-                      Notification
-                      <Badge className="ml-2 bg-red-500 text-white">5</Badge>
-                    </Button>
-                  </div>
-                </div>
+               
               </div>
             </div>
 
             {/* KPI Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-              <KpiCard
-                title="On-Time Delivery"
-                value={`${onTimeRate}%`}
-                change="+2.3%"
-                icon={CheckCircle2}
-                color="green"
-                description="Delivery success rate"
-              />
-              <KpiCard
-                title="Avg Delivery Time"
-                value={`${avgDeliveryTime}d`}
-                change="-0.3d"
-                icon={Clock}
-                color="blue"
-                description="Average transit duration"
-              />
-              <KpiCard
-                title="Active Shipments"
-                value={activeShipments}
-                change="+12%"
-                icon={Truck}
-                color="indigo"
-                description="Currently in transit"
-              />
-              <KpiCard
-                title="Exceptions"
-                value={exceptions}
-                change="+8"
-                icon={AlertTriangle}
-                color="red"
-                description="Issues this week"
-              />
+              <KpiCard title="On-Time Delivery" value={`${onTimeRate}%`} change="+2.3%" icon={CheckCircle2} color="yellow" description="Success rate" />
+              <KpiCard title="Avg Delivery Time" value={`${avgDeliveryTime}d`} change="-0.3d" icon={Clock} color="slateLight" description="Transit duration" />
+              <KpiCard title="Active Shipments" value={activeShipments} change="+12%" icon={Truck} color="slateDark" description="In transit" />
+              <KpiCard title="Exceptions" value={exceptions} change="+8" icon={AlertTriangle} color="red" description="Issues this week" />
             </div>
 
-            {/* Analytics Tabs */}
+            {/* Analytics Tabs System */}
             <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-8">
-              <TabsList className="bg-slate-100 p-1 rounded-xl h-14 mb-6">
-                <TabsTrigger value="overview" className="rounded-lg px-6 text-base">
+              <TabsList className="bg-slate-200/60 p-1 rounded-xl h-14 mb-6">
+                <TabsTrigger value="overview" className="rounded-lg px-6 text-base data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-sm">
                   Overview
                 </TabsTrigger>
-                <TabsTrigger value="carriers" className="rounded-lg px-6 text-base">
+                <TabsTrigger value="carriers" className="rounded-lg px-6 text-base data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-sm">
                   Carriers
                 </TabsTrigger>
-                <TabsTrigger value="regions" className="rounded-lg px-6 text-base">
+                <TabsTrigger value="regions" className="rounded-lg px-6 text-base data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-sm">
                   Regions
                 </TabsTrigger>
               </TabsList>
 
-              {/* Overview Tab - Shows everything */}
+              {/* OVERVIEW CONTENT */}
               <TabsContent value="overview" className="mt-0 space-y-8">
-                {/* Charts Grid */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  <Card className="border-0 shadow-lg">
-                    <CardHeader>
-                      <CardTitle>Delivery Performance</CardTitle>
-                      <CardDescription>On-time vs delayed deliveries</CardDescription>
-                    </CardHeader>
+                  <Card className="border-slate-200 shadow-sm">
+                    <CardHeader><CardTitle>Delivery Performance</CardTitle></CardHeader>
                     <CardContent>
                       <ResponsiveContainer width="100%" height={300}>
                         <BarChart data={deliveryPerformanceData}>
-                          <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-                          <XAxis dataKey="month" stroke="#6B7280" />
-                          <YAxis stroke="#6B7280" />
-                          <Tooltip />
-                          <Legend />
-                          <Bar dataKey="onTime" fill="#10B981" name="On Time %" radius={[8, 8, 0, 0]} />
-                          <Bar dataKey="delayed" fill="#EF4444" name="Delayed %" radius={[8, 8, 0, 0]} />
+                          <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+                          <XAxis dataKey="month" stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
+                          <YAxis stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
+                          <Tooltip cursor={{fill: '#f8fafc'}} />
+                          <Bar dataKey="onTime" fill="#0f172a" name="On Time %" radius={[4, 4, 0, 0]} />
+                          <Bar dataKey="delayed" fill="#facc15" name="Delayed %" radius={[4, 4, 0, 0]} />
                         </BarChart>
                       </ResponsiveContainer>
                     </CardContent>
                   </Card>
 
-                  <Card className="border-0 shadow-lg">
-                    <CardHeader>
-                      <CardTitle>Order Status Distribution</CardTitle>
-                      <CardDescription>Current orders by status</CardDescription>
-                    </CardHeader>
+                  <Card className="border-slate-200 shadow-sm">
+                    <CardHeader><CardTitle>Order Status Distribution</CardTitle></CardHeader>
                     <CardContent>
                       <ResponsiveContainer width="100%" height={300}>
                         <PieChart>
-                          <Pie
-                            data={orderStatusData}
-                            cx="50%"
-                            cy="50%"
-                            labelLine={false}
-                            label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                            outerRadius={100}
-                            fill="#8884d8"
-                            dataKey="value"
-                          >
-                            {orderStatusData.map((entry, index) => (
-                              <Cell key={`cell-${index}`} fill={entry.color} />
-                            ))}
+                          <Pie data={orderStatusData} cx="50%" cy="50%" innerRadius={60} outerRadius={100} dataKey="value">
+                            {orderStatusData.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.color} />)}
                           </Pie>
-                          <Tooltip formatter={(value) => [value, 'Orders']} />
+                          <Tooltip />
                         </PieChart>
                       </ResponsiveContainer>
                     </CardContent>
                   </Card>
                 </div>
-
-                {/* Carrier Performance Table */}
-                <Card className="border-0 shadow-lg">
-                  <CardHeader>
-                    <CardTitle>Carrier Performance</CardTitle>
-                    <CardDescription>Detailed metrics by carrier</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="overflow-x-auto">
-                      <table className="w-full">
-                        <thead>
-                          <tr className="border-b border-slate-200">
-                            <th className="text-left py-3 px-2 text-sm text-slate-600">Carrier</th>
-                            <th className="text-right py-3 px-2 text-sm text-slate-600">Deliveries</th>
-                            <th className="text-right py-3 px-2 text-sm text-slate-600">On-Time %</th>
-                            <th className="text-right py-3 px-2 text-sm text-slate-600">Avg Time</th>
-                            <th className="text-right py-3 px-2 text-sm text-slate-600">Avg Cost</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {carrierPerformanceData
-                            .sort((a, b) => b.onTime - a.onTime)
-                            .map((carrier) => (
-                              <tr key={carrier.carrier} className="border-b border-slate-100 last:border-0 hover:bg-slate-50">
-                                <td className="py-3 px-2">
-                                  <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-indigo-50 to-purple-50 flex items-center justify-center">
-                                      <Truck className="w-5 h-5 text-indigo-600" />
-                                    </div>
-                                    <div>
-                                      <span className="font-medium">{carrier.carrier}</span>
-                                      <p className="text-xs text-slate-500">{carrier.type || 'Standard'}</p>
-                                    </div>
-                                  </div>
-                                </td>
-                                <td className="text-right py-3 px-2">
-                                  <span className="font-medium">{carrier.deliveries?.toLocaleString() || '0'}</span>
-                                </td>
-                                <td className="text-right py-3 px-2">
-                                  <Badge className={
-                                    carrier.onTime >= 95 ? 'bg-green-100 text-green-700' :
-                                    carrier.onTime >= 90 ? 'bg-blue-100 text-blue-700' :
-                                    'bg-yellow-100 text-yellow-700'
-                                  }>
-                                    {carrier.onTime || 0}%
-                                  </Badge>
-                                </td>
-                                <td className="text-right py-3 px-2">
-                                  <span className="font-medium">{carrier.avgTime || 0}d</span>
-                                </td>
-                                <td className="text-right py-3 px-2">
-                                  <span className="font-medium">${(carrier.avgCost || 0).toFixed(2)}</span>
-                                </td>
-                              </tr>
-                            ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* Regional Distribution */}
-                <Card className="border-0 shadow-lg">
-                  <CardHeader>
-                    <CardTitle>Regional Distribution</CardTitle>
-                    <CardDescription>Orders by geographic region</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4 mb-6">
-                      {regionData.map((region, index) => (
-                        <div key={region.region}>
-                          <div className="flex items-center justify-between mb-2">
-                            <div className="flex items-center gap-3">
-                              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-50 to-indigo-50 flex items-center justify-center">
-                                <MapPin className="w-5 h-5 text-blue-600" />
-                              </div>
-                              <div>
-                                <span className="font-medium">{region.region}</span>
-                                <p className="text-xs text-slate-500">{region.countries || 1} countries</p>
-                              </div>
-                            </div>
-                            <div className="flex items-center gap-4">
-                              <span className="text-sm text-slate-600">{(region.orders || 0).toLocaleString()} orders</span>
-                              <span className="font-bold text-indigo-600">{region.percentage || 0}%</span>
-                            </div>
-                          </div>
-                          <div className="w-full bg-slate-200 rounded-full h-2">
-                            <div
-                              className="h-2 rounded-full transition-all duration-500"
-                              style={{
-                                width: `${region.percentage || 0}%`,
-                                backgroundColor: COLORS[index % COLORS.length] || '#3B82F6'
-                              }}
-                            ></div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                    {/* Map Visualization Placeholder */}
-                    <div className="mt-6 w-full h-48 bg-gradient-to-br from-blue-50 to-teal-50 rounded-lg flex items-center justify-center relative overflow-hidden">
-                      <div className="absolute inset-0 opacity-10">
-                        <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
-                          <circle cx="20" cy="30" r="3" fill="#1E3A8A" />
-                          <circle cx="75" cy="25" r="4" fill="#1E3A8A" />
-                          <circle cx="50" cy="50" r="5" fill="#14B8A6" />
-                          <circle cx="30" cy="70" r="3" fill="#1E3A8A" />
-                          <circle cx="85" cy="60" r="2" fill="#1E3A8A" />
-                        </svg>
-                      </div>
-                      <div className="relative z-10 text-center">
-                        <BarChart3 className="w-12 h-12 text-[#1E3A8A] mx-auto mb-2" />
-                        <p className="text-[#1E3A8A] font-medium">Geographic Heat Map</p>
-                        <p className="text-sm text-gray-600">Delivery destinations visualization</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
               </TabsContent>
 
-              {/* Carriers Tab - Shows only carrier section */}
+              {/* CARRIERS CONTENT */}
               <TabsContent value="carriers" className="mt-0">
-                <Card className="border-0 shadow-lg">
-                  <CardHeader>
-                    <CardTitle>Carrier Performance</CardTitle>
-                    <CardDescription>Detailed metrics by carrier</CardDescription>
-                  </CardHeader>
+                <Card className="border-slate-200 shadow-sm">
+                  <CardHeader><CardTitle>Carrier Performance</CardTitle></CardHeader>
                   <CardContent>
                     <div className="overflow-x-auto">
                       <table className="w-full">
                         <thead>
-                          <tr className="border-b border-slate-200">
-                            <th className="text-left py-3 px-2 text-sm text-slate-600">Carrier</th>
-                            <th className="text-right py-3 px-2 text-sm text-slate-600">Deliveries</th>
-                            <th className="text-right py-3 px-2 text-sm text-slate-600">On-Time %</th>
-                            <th className="text-right py-3 px-2 text-sm text-slate-600">Avg Time</th>
-                            <th className="text-right py-3 px-2 text-sm text-slate-600">Avg Cost</th>
+                          <tr className="border-b border-slate-100 text-left">
+                            <th className="py-4 px-2 text-sm font-semibold text-slate-900">Carrier</th>
+                            <th className="text-right py-4 px-2 text-sm font-semibold text-slate-900">On-Time %</th>
+                            <th className="text-right py-4 px-2 text-sm font-semibold text-slate-900">Avg Cost</th>
                           </tr>
                         </thead>
                         <tbody>
-                          {carrierPerformanceData
-                            .sort((a, b) => b.onTime - a.onTime)
-                            .map((carrier) => (
-                              <tr key={carrier.carrier} className="border-b border-slate-100 last:border-0 hover:bg-slate-50">
-                                <td className="py-3 px-2">
-                                  <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-indigo-50 to-purple-50 flex items-center justify-center">
-                                      <Truck className="w-5 h-5 text-indigo-600" />
-                                    </div>
-                                    <div>
-                                      <span className="font-medium">{carrier.carrier}</span>
-                                      <p className="text-xs text-slate-500">{carrier.type || 'Standard'}</p>
-                                    </div>
-                                  </div>
-                                </td>
-                                <td className="text-right py-3 px-2">
-                                  <span className="font-medium">{carrier.deliveries?.toLocaleString() || '0'}</span>
-                                </td>
-                                <td className="text-right py-3 px-2">
-                                  <Badge className={
-                                    carrier.onTime >= 95 ? 'bg-green-100 text-green-700' :
-                                    carrier.onTime >= 90 ? 'bg-blue-100 text-blue-700' :
-                                    'bg-yellow-100 text-yellow-700'
-                                  }>
-                                    {carrier.onTime || 0}%
-                                  </Badge>
-                                </td>
-                                <td className="text-right py-3 px-2">
-                                  <span className="font-medium">{carrier.avgTime || 0}d</span>
-                                </td>
-                                <td className="text-right py-3 px-2">
-                                  <span className="font-medium">${(carrier.avgCost || 0).toFixed(2)}</span>
-                                </td>
-                              </tr>
-                            ))}
+                          {carrierPerformanceData.map((carrier) => (
+                            <tr key={carrier.carrier} className="border-b border-slate-50 last:border-0">
+                              <td className="py-4 px-2 font-medium">{carrier.carrier}</td>
+                              <td className="text-right py-4 px-2">
+                                <Badge className="bg-slate-900 text-yellow-400 border-none">{carrier.onTime}%</Badge>
+                              </td>
+                              <td className="text-right py-4 px-2 font-bold">${carrier.avgCost}</td>
+                            </tr>
+                          ))}
                         </tbody>
                       </table>
                     </div>
@@ -458,40 +201,20 @@ export default function AdminDashboard() {
                 </Card>
               </TabsContent>
 
-              {/* Regions Tab - Shows only region section */}
+              {/* REGIONS CONTENT */}
               <TabsContent value="regions" className="mt-0">
-                <Card className="border-0 shadow-lg">
-                  <CardHeader>
-                    <CardTitle>Regional Distribution</CardTitle>
-                    <CardDescription>Orders by geographic region</CardDescription>
-                  </CardHeader>
+                <Card className="border-slate-200 shadow-sm">
+                  <CardHeader><CardTitle>Regional Distribution</CardTitle></CardHeader>
                   <CardContent>
-                    <div className="space-y-4 mb-6">
+                    <div className="space-y-6">
                       {regionData.map((region, index) => (
                         <div key={region.region}>
-                          <div className="flex items-center justify-between mb-2">
-                            <div className="flex items-center gap-3">
-                              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-50 to-indigo-50 flex items-center justify-center">
-                                <MapPin className="w-5 h-5 text-blue-600" />
-                              </div>
-                              <div>
-                                <span className="font-medium">{region.region}</span>
-                                <p className="text-xs text-slate-500">{region.countries || 1} countries</p>
-                              </div>
-                            </div>
-                            <div className="flex items-center gap-4">
-                              <span className="text-sm text-slate-600">{(region.orders || 0).toLocaleString()} orders</span>
-                              <span className="font-bold text-indigo-600">{region.percentage || 0}%</span>
-                            </div>
+                          <div className="flex justify-between mb-2">
+                            <span className="font-medium text-slate-900">{region.region}</span>
+                            <span className="font-bold text-slate-900">{region.percentage}%</span>
                           </div>
-                          <div className="w-full bg-slate-200 rounded-full h-2">
-                            <div
-                              className="h-2 rounded-full transition-all duration-500"
-                              style={{
-                                width: `${region.percentage || 0}%`,
-                                backgroundColor: COLORS[index % COLORS.length] || '#3B82F6'
-                              }}
-                            ></div>
+                          <div className="w-full bg-slate-100 rounded-full h-2">
+                            <div className="h-2 rounded-full" style={{ width: `${region.percentage}%`, backgroundColor: COLORS[index % COLORS.length] }} />
                           </div>
                         </div>
                       ))}
@@ -524,53 +247,28 @@ export default function AdminDashboard() {
   );
 }
 
-// Helper Components
-function NavItem({ icon: Icon, label, active, onClick }) {
-  return (
-    <Button
-      onClick={onClick}
-      variant="ghost"
-      className={`w-full justify-start h-12 rounded-xl font-medium transition-all ${
-        active 
-          ? "bg-gradient-to-r from-indigo-50 to-purple-50 text-indigo-700 border border-indigo-100 shadow-sm" 
-          : "text-slate-600 hover:text-indigo-600 hover:bg-indigo-50/50"
-      }`}
-    >
-      {Icon && <Icon className={`w-5 h-5 mr-3 ${active ? "text-indigo-600" : ""}`} />}
-      {label}
-    </Button>
-  );
-}
-
 function KpiCard({ title, value, change, icon: Icon, color, description }) {
-  const IconComponent = Icon;
   const colorConfig = {
-    green: { gradient: "from-green-500 to-emerald-500", text: "text-green-600", bg: "bg-green-100" },
-    blue: { gradient: "from-blue-500 to-cyan-500", text: "text-blue-600", bg: "bg-blue-100" },
-    indigo: { gradient: "from-indigo-500 to-purple-500", text: "text-indigo-600", bg: "bg-indigo-100" },
-    red: { gradient: "from-red-500 to-rose-500", text: "text-red-600", bg: "bg-red-100" },
+    yellow: { iconBg: "bg-yellow-400", iconCol: "text-slate-900" },
+    slateLight: { iconBg: "bg-slate-200", iconCol: "text-slate-600" },
+    slateDark: { iconBg: "bg-slate-900", iconCol: "text-yellow-400" },
+    red: { iconBg: "bg-red-100", iconCol: "text-red-600" },
   };
-
-  const config = colorConfig[color] || colorConfig.indigo;
+  const config = colorConfig[color] || colorConfig.slateDark;
 
   return (
-    <Card className="border-0 shadow-lg overflow-hidden group hover:shadow-xl transition-all duration-300">
-      <div className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${config.gradient}`}></div>
+    <Card className="border-slate-200 shadow-sm bg-white hover:border-yellow-400 transition-colors">
       <CardContent className="pt-6">
-        <div className="flex items-center justify-between mb-2">
+        <div className="flex justify-between mb-4">
           <div>
-            <p className="text-sm font-medium text-slate-600 mb-1">{title}</p>
-            <p className="text-2xl font-bold text-slate-900">{value}</p>
-            <p className="text-xs text-slate-500 mt-1">{description}</p>
+            <p className="text-xs font-bold uppercase text-slate-400">{title}</p>
+            <p className="text-3xl font-bold text-slate-900">{value}</p>
           </div>
-          <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${config.gradient} flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform`}>
-            <Icon className="w-7 h-7 text-white" />
+          <div className={`w-12 h-12 rounded-xl ${config.iconBg} flex items-center justify-center`}>
+            <Icon className={`w-6 h-6 ${config.iconCol}`} />
           </div>
         </div>
-        <div className={`flex items-center gap-1 text-sm font-medium ${config.text} mt-3`}>
-          {change.startsWith('+') ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
-          <span>{change}</span>
-        </div>
+        <div className="text-sm font-bold text-slate-900">{change} <span className="text-[10px] text-slate-400 uppercase ml-2">{description}</span></div>
       </CardContent>
     </Card>
   );

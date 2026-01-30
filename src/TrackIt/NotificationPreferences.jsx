@@ -7,6 +7,8 @@ import {
   MessageSquare,
   Package,
   CheckCircle2,
+  Settings2,
+  Zap
 } from "lucide-react";
 
 import {
@@ -18,6 +20,7 @@ import {
 } from "./ui/Card";
 import { Button } from "./ui/Button";
 import { toast } from "sonner";
+import { Layout } from "./Layout";
 
 export default function NotificationPreferences() {
   const navigate = useNavigate();
@@ -26,8 +29,8 @@ export default function NotificationPreferences() {
   const [notifications, setNotifications] = useState([
     {
       id: "order-updates",
-      title: "Order Updates",
-      description: "Get notified about order status changes",
+      title: "Logistic Status",
+      description: "Real-time updates on shipment tracking and status changes",
       icon: Package,
       email: true,
       push: true,
@@ -35,8 +38,8 @@ export default function NotificationPreferences() {
     },
     {
       id: "delivery-updates",
-      title: "Delivery Updates",
-      description: "Real-time updates when your package is out for delivery",
+      title: "Terminal Arrival",
+      description: "Automated alerts when assets reach destination hubs",
       icon: CheckCircle2,
       email: true,
       push: true,
@@ -44,17 +47,17 @@ export default function NotificationPreferences() {
     },
     {
       id: "promotions",
-      title: "Promotions & Offers",
-      description: "Receive exclusive deals and promotional offers",
-      icon: Mail,
+      title: "System Bulletins",
+      description: "Receive updates on new features and service upgrades",
+      icon: Zap,
       email: true,
       push: false,
       sms: false,
     },
     {
       id: "messages",
-      title: "Messages & Support",
-      description: "Notifications about support tickets and messages",
+      title: "Command Support",
+      description: "Direct notifications from technical support and dispatch",
       icon: MessageSquare,
       email: true,
       push: true,
@@ -74,170 +77,109 @@ export default function NotificationPreferences() {
     setIsSaving(true);
     await new Promise((r) => setTimeout(r, 1000));
     setIsSaving(false);
-    toast.success("Notification preferences updated!");
+    toast.success("Terminal communication protocols updated");
   };
 
   return (
-     <div className="min-h-[calc(100vh-4rem)] bg-gradient-to-br from-indigo-50 via-white to-purple-50 py-8">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Back Button */}
-        <button
-          onClick={() => navigate('/profile')}
-          className="flex items-center gap-2 text-gray-600 hover:text-indigo-600 mb-6 transition-colors"
-        >
-          <ArrowLeft className="w-5 h-5" />
-          <span>Back to Profile</span>
-        </button>
-
-        {/* Header */}
-        <div className="mb-6 animate-slide-in">
-          <h1 className="mb-2 bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">Notification Preferences</h1>
-          <p className="text-gray-600">Choose how you want to receive notifications</p>
-        </div>
-
-        {/* Notification Settings */}
-        <div className="space-y-4 mb-6">
-          {notifications.map((notification, index) => (
-            <Card 
-              key={notification.id} 
-              className="border-0 shadow-xl overflow-hidden animate-scale-in"
-              style={{ animationDelay: `${index * 0.1}s` }}
-            >
-              <div className="absolute top-0 left-0 right-0 h-1 gradient-primary"></div>
-              <CardHeader className="pb-4">
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-xl gradient-primary flex items-center justify-center flex-shrink-0">
-                    <notification.icon className="w-6 h-6 text-white" />
-                  </div>
-                  <div className="flex-1">
-                    <CardTitle className="mb-1">{notification.title}</CardTitle>
-                    <CardDescription>{notification.description}</CardDescription>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  {/* Email Toggle */}
-                  <button
-                    onClick={() => toggleNotification(notification.id, 'email')}
-                    className={`p-4 rounded-xl border-2 transition-all ${
-                      notification.email 
-                        ? 'border-indigo-500 bg-indigo-50' 
-                        : 'border-gray-200 hover:border-gray-300'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between mb-2">
-                      <Mail className={`w-5 h-5 ${notification.email ? 'text-indigo-600' : 'text-gray-400'}`} />
-                      {notification.email && (
-                        <CheckCircle2 className="w-5 h-5 text-indigo-600" />
-                      )}
-                    </div>
-                    <p className={`font-medium text-sm ${notification.email ? 'text-indigo-600' : 'text-gray-600'}`}>
-                      Email
-                    </p>
-                  </button>
-
-                  {/* Push Toggle */}
-                  <button
-                    onClick={() => toggleNotification(notification.id, 'push')}
-                    className={`p-4 rounded-xl border-2 transition-all ${
-                      notification.push 
-                        ? 'border-green-500 bg-green-50' 
-                        : 'border-gray-200 hover:border-gray-300'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between mb-2">
-                      <Bell className={`w-5 h-5 ${notification.push ? 'text-green-600' : 'text-gray-400'}`} />
-                      {notification.push && (
-                        <CheckCircle2 className="w-5 h-5 text-green-600" />
-                      )}
-                    </div>
-                    <p className={`font-medium text-sm ${notification.push ? 'text-green-600' : 'text-gray-600'}`}>
-                      Push
-                    </p>
-                  </button>
-
-                  {/* SMS Toggle */}
-                  <button
-                    onClick={() => toggleNotification(notification.id, 'sms')}
-                    className={`p-4 rounded-xl border-2 transition-all ${
-                      notification.sms 
-                        ? 'border-purple-500 bg-purple-50' 
-                        : 'border-gray-200 hover:border-gray-300'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between mb-2">
-                      <MessageSquare className={`w-5 h-5 ${notification.sms ? 'text-purple-600' : 'text-gray-400'}`} />
-                      {notification.sms && (
-                        <CheckCircle2 className="w-5 h-5 text-purple-600" />
-                      )}
-                    </div>
-                    <p className={`font-medium text-sm ${notification.sms ? 'text-purple-600' : 'text-gray-600'}`}>
-                      SMS
-                    </p>
-                  </button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-
-        {/* Quick Actions */}
-        <Card className="border-0 shadow-xl mb-6 overflow-hidden">
-          <div className="absolute top-0 left-0 right-0 h-1 gradient-info"></div>
-          <CardHeader>
-            <CardTitle>Quick Actions</CardTitle>
-            <CardDescription>Manage all notifications at once</CardDescription>
-          </CardHeader>
-          <CardContent className="flex flex-wrap gap-3">
-            <Button
-              variant="outline"
-              onClick={() => {
-                setNotifications(prev => prev.map(n => ({ ...n, email: true, push: true, sms: true })));
-                toast.success('All notifications enabled');
-              }}
-            >
-              Enable All
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => {
-                setNotifications(prev => prev.map(n => ({ ...n, email: false, push: false, sms: false })));
-                toast.info('All notifications disabled');
-              }}
-            >
-              Disable All
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => {
-                setNotifications(prev => prev.map(n => ({ ...n, email: true, push: false, sms: false })));
-                toast.success('Email only mode activated');
-              }}
-            >
-              Email Only
-            </Button>
-          </CardContent>
-        </Card>
-
-        {/* Action Buttons */}
-        <div className="flex flex-col sm:flex-row gap-3">
-          <Button
-            variant="outline"
-            className="flex-1"
+    <div className="min-h-screen bg-slate-50 flex">
+      <Layout />
+      
+      <main className="flex-1 p-8">
+        <div className="max-w-4xl mx-auto">
+          {/* Header & Navigation */}
+          <button
             onClick={() => navigate('/profile')}
+            className="flex items-center gap-2 text-slate-500 font-bold uppercase tracking-widest text-[10px] hover:text-slate-900 mb-8 transition-colors group"
           >
-            Cancel
-          </Button>
-          <Button
-            className="flex-1 gradient-primary hover:opacity-90"
-            onClick={handleSave}
-            disabled={isSaving}
-          >
-            {isSaving ? 'Saving...' : 'Save Preferences'}
-          </Button>
+            <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+            <span>Return to Profile</span>
+          </button>
+
+          <div className="mb-10">
+            <h1 className="text-4xl font-black text-slate-900 tracking-tighter uppercase mb-2">
+              Alert <span className="text-yellow-500">Channels</span>
+            </h1>
+            <p className="text-slate-500 font-bold uppercase tracking-widest text-[10px]">
+              Configure communication nodes for real-time telemetry
+            </p>
+          </div>
+
+          {/* Notification List */}
+          <div className="space-y-6 mb-8">
+            {notifications.map((notification) => (
+              <Card 
+                key={notification.id} 
+                className="border-none shadow-sm bg-white rounded-2xl overflow-hidden relative"
+              >
+                <div className="h-1.5 w-full bg-slate-900" />
+                <CardHeader className="px-8 pt-8">
+                  <div className="flex items-start gap-5">
+                    <div className="w-14 h-14 rounded-2xl bg-slate-50 flex items-center justify-center flex-shrink-0 shadow-inner">
+                      <notification.icon className="w-7 h-7 text-slate-900" />
+                    </div>
+                    <div className="flex-1">
+                      <CardTitle className="text-lg font-black uppercase tracking-tight text-slate-900">
+                        {notification.title}
+                      </CardTitle>
+                      <CardDescription className="text-xs font-medium text-slate-400 mt-1">
+                        {notification.description}
+                      </CardDescription>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="px-8 pb-8">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    {/* Toggle Buttons */}
+                    {[
+                      { key: 'email', label: 'Email Node', icon: Mail },
+                      { key: 'push', label: 'Push Alert', icon: Bell },
+                      { key: 'sms', label: 'SMS Link', icon: MessageSquare }
+                    ].map((type) => (
+                      <button
+                        key={type.key}
+                        onClick={() => toggleNotification(notification.id, type.key)}
+                        className={`p-4 rounded-xl border-2 transition-all flex flex-col items-center gap-2 ${
+                          notification[type.key] 
+                            ? 'border-yellow-500 bg-yellow-50/30' 
+                            : 'border-slate-100 bg-white hover:border-slate-200'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between w-full">
+                          <type.icon className={`w-4 h-4 ${notification[type.key] ? 'text-slate-900' : 'text-slate-300'}`} />
+                          <div className={`w-3 h-3 rounded-full ${notification[type.key] ? 'bg-yellow-500 shadow-[0_0_8px_rgba(234,179,8,0.6)]' : 'bg-slate-200'}`} />
+                        </div>
+                        <span className={`text-[10px] font-black uppercase tracking-widest ${notification[type.key] ? 'text-slate-900' : 'text-slate-400'}`}>
+                          {type.label}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          
+
+          {/* Primary Action Buttons */}
+          <div className="flex flex-col sm:flex-row gap-4">
+            <Button
+              variant="outline"
+              className="flex-1 border-slate-200 text-slate-500 font-bold uppercase text-[10px] tracking-widest h-14 rounded-xl"
+              onClick={() => navigate('/profile')}
+            >
+              Cancel
+            </Button>
+            <Button
+              className="flex-1 bg-slate-900 text-yellow-400 hover:bg-slate-800 font-black uppercase text-[10px] tracking-widest h-14 rounded-xl shadow-xl shadow-slate-200"
+              onClick={handleSave}
+              disabled={isSaving}
+            >
+              {isSaving ? 'Synchronizing...' : 'Save Configuration'}
+            </Button>
+          </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 }

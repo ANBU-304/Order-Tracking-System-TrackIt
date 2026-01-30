@@ -1,22 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState,} from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  Package,
-  Mail,
-  Lock,
-  ArrowRight,
-  Eye,
-  EyeOff,
-  Shield,
-  CheckCircle
+  Package, Mail, Lock, ArrowRight, Eye, EyeOff, CheckCircle, ShieldCheck, User, KeyRound
 } from "lucide-react";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "./ui/Card";
+import { Card, CardContent, CardDescription, CardTitle } from "./ui/Card";
 import { Input } from "./ui/Input";
 import { Button } from "./ui/Button";
 import { Label } from "./ui/Label";
@@ -24,339 +11,187 @@ import { useAuth } from "./useAuth";
 import { toast } from "sonner";
 
 export default function Login() {
+  const [mode, setMode] = useState("login"); // 'login', 'signup', 'forgot'
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [name, setName] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [isNotificationSupported, setIsNotificationSupported] = useState(false);
 
   const auth = useAuth();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    // Check if browser notifications are supported
-    setIsNotificationSupported("Notification" in window);
-  }, []);
-
-  const requestNotificationPermission = async () => {
-    if (!isNotificationSupported) return false;
-
-    try {
-      const permission = await Notification.requestPermission();
-      return permission === "granted";
-    } catch (error) {
-      console.error("Error requesting notification permission:", error);
-      return false;
-    }
-  };
-
-  const showBrowserNotification = (title, message) => {
-    if (!isNotificationSupported || Notification.permission !== "granted") {
-      return;
-    }
-
-    const notification = new Notification(title, {
-      body: message,
-      icon: "/favicon.ico", // Add your app icon path
-      badge: "/favicon.ico",
-      tag: "login-success", // Prevents duplicate notifications
-      requireInteraction: true, // Stays until user interacts
-      silent: false,
-    });
-
-    notification.onclick = () => {
-      window.focus();
-      notification.close();
-    };
-
-    // Auto close after 10 seconds
-    setTimeout(() => notification.close(), 10000);
-  };
-
-  const handleLogin = async (e) => {
+  const handleAuth = async (e) => {
     e.preventDefault();
-
-    if (!email || !password) {
-      toast.error("Please enter both email and password");
-      return;
-    }
-
     setIsLoading(true);
 
     try {
-      const success = await auth.login(email, password);
-
-      if (success) {
-        // Request notification permission if not already granted
-        if (isNotificationSupported && Notification.permission === "default") {
-          await requestNotificationPermission();
-        }
-
-        // Show browser notification
-        showBrowserNotification(
-          "Login Successful!",
-          `Welcome back to TrackIt! You have successfully logged in.`
-        );
-
-        // Show toast for immediate feedback
-        toast.success("Login successful! Redirecting...", {
-          icon: <CheckCircle className="w-4 h-4 text-green-500" />,
-        });
-
-        // Add a slight delay before redirect
-        setTimeout(() => {
+      if (mode === "login") {
+        const success = await auth.login(email, password);
+        if (success) {
+          toast.success("Welcome back!");
           navigate("/dashboard");
-        }, 1000);
+        } else {
+          toast.error("Invalid credentials");
+        }
+      } else if (mode === "signup") {
+        // Logic for New Customer
+        toast.success("Account created! Please login.");
+        setMode("login");
       } else {
-        toast.error("Invalid email or password", {
-          description: "Please check your credentials and try again.",
-        });
+        // Forgot password / OTP Logic
+        toast.success("OTP sent to " + email);
       }
     } catch (error) {
-      console.error("Login error:", error);
-      toast.error("An error occurred. Please try again.");
+      toast.error("An error occurred");
     } finally {
       setIsLoading(false);
     }
   };
 
-  const demoLogin = async (demoEmail) => {
-    setEmail(demoEmail);
-    setPassword("demo123");
-    
-    // Auto submit after a brief delay
-    setTimeout(() => {
-      handleLogin(new Event('submit'));
-    }, 100);
-  };
-
   return (
-    <div className="min-h-screen bg-linear-to-br from-indigo-50 via-white to-purple-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-5xl grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-        {/* Left Side - Branding & Features */}
-        <div className="hidden lg:block space-y-8 animate-fade-in">
-          <div className="flex items-center gap-4 mb-10">
-            <div className="relative">
-              <div className="gradient-primary p-4 rounded-2xl shadow-lg">
-                <Package className="w-12 h-12 text-white" />
-              </div>
-              <div className="absolute -top-2 -right-2 bg-white rounded-full p-1.5 shadow-lg border">
-                <Shield className="w-5 h-5 text-green-600" />
-              </div>
-            </div>
-            <div>
-              <h1 className="text-4xl font-bold bg-linear-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-                TrackIt Pro
-              </h1>
-              <p className="text-gray-600 mt-1">Enterprise Order Tracking System</p>
-            </div>
-          </div>
-          
-          <div className="space-y-6">
-            <h2 className="text-4xl font-bold text-gray-900 leading-tight">
-              Secure Access to Your<br />Shipping Dashboard
-            </h2>
-            <p className="text-gray-600 text-lg">
-              Sign in to monitor shipments, track deliveries, and manage logistics operations with enterprise-grade security.
-            </p>
-          </div>
+    <div className="min-h-screen relative flex items-center justify-center p-4 bg-slate-950">
+      {/* Background with LIGHTER Overlay to show image */}
+      <div className="absolute inset-0 z-0">
+        <img 
+          src="https://images.pexels.com/photos/6994138/pexels-photo-6994138.jpeg"
+          alt="Logistics"
+          className="w-full h-full object-cover opacity-50" // Increased opacity of image
+        />
+        {/* Lighter Gradient Overlay */}
+        <div className="absolute inset-0 bg-slate-950/60 backdrop-blur-[2px]"></div>
+      </div>
 
-          <div className="grid grid-cols-2 gap-6 pt-8">
-            <div className="p-5 bg-white/80 backdrop-blur-sm rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="p-2 bg-blue-50 rounded-lg">
-                  <div className="w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center">
-                    <span className="text-xs font-bold text-white">✓</span>
-                  </div>
-                </div>
-                <div className="text-2xl font-bold text-gray-900">256-bit</div>
-              </div>
-              <div className="text-sm text-gray-600">End-to-end encryption</div>
-            </div>
-            <div className="p-5 bg-white/80 backdrop-blur-sm rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="p-2 bg-green-50 rounded-lg">
-                  <div className="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center">
-                    <span className="text-xs font-bold text-white">24/7</span>
-                  </div>
-                </div>
-                <div className="text-2xl font-bold text-gray-900">99.9%</div>
-              </div>
-              <div className="text-sm text-gray-600">Uptime SLA</div>
-            </div>
+      <div className="w-full max-w-5xl grid grid-cols-1 lg:grid-cols-2 gap-12 items-center relative z-10">
+        {/* Left Side - Branding */}
+        <div className="hidden lg:block space-y-6 text-white">
+          <div className="flex items-center gap-4 mb-6">
+           
+            <h1 className="text-4xl font-black uppercase tracking-tighter">
+              Track<span className="text-yellow-400">It</span>
+            </h1>
           </div>
-
-          {/* Security Badge */}
-          <div className="mt-10 p-4 bg-linear-to-r from-green-50 to-emerald-50 rounded-xl border border-green-200">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-white rounded-lg border border-green-200">
-                <Shield className="w-5 h-5 text-green-600" />
-              </div>
-              <div>
-                <div className="text-sm font-medium text-green-800">Secure Login</div>
-                <div className="text-xs text-green-600">
-                  Your credentials are protected with industry-standard security protocols
-                </div>
-              </div>
-            </div>
-          </div>
+          <h2 className="text-6xl font-black leading-[0.9] tracking-tighter">
+            THE GLOBAL <br /> <span className="text-yellow-400">STANDARD.</span>
+          </h2>
+          <p className="text-slate-200 text-lg font-medium opacity-80 max-w-sm">
+            Professional logistics tracking for enterprise and individual shipments.
+          </p>
         </div>
 
-        {/* Right Side - Login Form */}
-        <div className="animate-scale-in">
-          <Card className="border-0 shadow-2xl overflow-hidden">
-            {/* Gradient Header */}
-            <div className="bg-linear-to-r from-indigo-600 to-purple-600 px-8 py-6">
-              <CardTitle className="text-2xl text-white">Welcome Back</CardTitle>
-              <CardDescription className="text-indigo-100">
-                Sign in to your TrackIt account
+        {/* Right Side - Auth Card */}
+        <div className="animate-in fade-in zoom-in duration-500">
+          <Card className="border-0 shadow-2xl bg-white rounded-3xl overflow-hidden">
+            <div className="bg-slate-900 px-8 py-8 text-white relative">
+              <CardTitle className="text-2xl font-black uppercase tracking-tight">
+                {mode === 'login' ? 'Secure Login' : mode === 'signup' ? 'Create Account' : 'Reset Access'}
+              </CardTitle>
+              <CardDescription className="text-slate-400 font-bold uppercase text-[10px] tracking-widest mt-1">
+                {mode === 'login' ? 'Personnel & Customer Portal' : 'New Customer Registration'}
               </CardDescription>
+              <div className="absolute top-0 right-0 w-1.5 h-full bg-yellow-400"></div>
             </div>
             
-            <CardContent className="pt-8">
-              <form onSubmit={handleLogin} className="space-y-5">
-                <div className="space-y-3">
-                  <Label htmlFor="email" className="text-gray-700 font-medium">
-                    Email Address
-                  </Label>
+            <CardContent className="p-8">
+              <form onSubmit={handleAuth} className="space-y-4">
+                
+                {/* Name field only for Sign Up */}
+                {mode === 'signup' && (
+                  <div className="space-y-1">
+                    <Label className="text-[10px] font-black uppercase text-slate-500">Full Name</Label>
+                    <div className="relative">
+                      <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                      <Input 
+                        placeholder="John Doe" 
+                        className="pl-10 h-11 border-slate-200 focus:ring-yellow-400" 
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        required 
+                      />
+                    </div>
+                  </div>
+                )}
+
+                <div className="space-y-1">
+                  <Label className="text-[10px] font-black uppercase text-slate-500">Email Address</Label>
                   <div className="relative">
-                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                    <Input
-                      id="email"
-                      type="email"
-                      placeholder="your.email@company.com"
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                    <Input 
+                      type="email" 
+                      placeholder="name@email.com" 
+                      className="pl-10 h-11 border-slate-200 focus:ring-yellow-400" 
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="pl-12 h-12 text-base border-gray-300 focus:border-indigo-500 focus:ring-indigo-500"
-                      disabled={isLoading}
-                      required
+                      required 
                     />
                   </div>
                 </div>
 
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <Label htmlFor="password" className="text-gray-700 font-medium">
-                      Password
-                    </Label>
-                    <a 
-                      href="#" 
-                      className="text-sm text-indigo-600 hover:text-indigo-700 font-medium"
-                    >
-                      Forgot password?
-                    </a>
+                {/* Password field hidden for Forgot Password mode */}
+                {mode !== 'forgot' && (
+                  <div className="space-y-1">
+                    <Label className="text-[10px] font-black uppercase text-slate-500">Password</Label>
+                    <div className="relative">
+                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                      <Input 
+                        type={showPassword ? "text" : "password"} 
+                        placeholder="••••••••" 
+                        className="pl-10 h-11 border-slate-200 focus:ring-yellow-400" 
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        required 
+                      />
+                      <button 
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-900"
+                      >
+                        {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </button>
+                    </div>
                   </div>
-                  <div className="relative">
-                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                    <Input
-                      id="password"
-                      type={showPassword ? 'text' : 'password'}
-                      placeholder="Enter your password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      className="pl-12 pr-12 h-12 text-base border-gray-300 focus:border-indigo-500 focus:ring-indigo-500"
-                      disabled={isLoading}
-                      required
-                    />
-                    <button
+                )}
+
+                {/* Forgot Password Link (Only in login mode) */}
+                {mode === 'login' && (
+                  <div className="text-right">
+                    <button 
                       type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors p-1"
-                      disabled={isLoading}
+                      onClick={() => setMode('forgot')}
+                      className="text-[10px] font-black uppercase text-slate-400 hover:text-yellow-600 transition-colors"
                     >
-                      {showPassword ? (
-                        <EyeOff className="w-5 h-5" />
-                      ) : (
-                        <Eye className="w-5 h-5" />
-                      )}
+                      Forgot Password?
                     </button>
                   </div>
-                </div>
+                )}
 
-                <div className="flex items-center space-x-2 pt-2">
-                  <input
-                    id="remember"
-                    type="checkbox"
-                    className="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
-                  />
-                  <label
-                    htmlFor="remember"
-                    className="text-sm text-gray-600 cursor-pointer"
-                  >
-                    Keep me signed in for 30 days
-                  </label>
-                </div>
-
-                <Button
-                  type="submit"
-                  className="w-full h-12 text-base font-medium bg-linear-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 shadow-lg hover:shadow-xl transition-all duration-200"
-                  disabled={isLoading}
-                >
-                  {isLoading ? (
-                    <div className="flex items-center gap-2">
-                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                      Signing In...
-                    </div>
-                  ) : (
-                    <>
-                      Sign In to Dashboard
-                      <ArrowRight className="w-5 h-5 ml-2" />
-                    </>
-                  )}
+                <Button className="w-full h-12 bg-slate-900 hover:bg-slate-800 text-yellow-400 font-black uppercase tracking-widest text-xs rounded-xl shadow-lg group">
+                  {isLoading ? "Processing..." : mode === 'login' ? "Sign In" : mode === 'signup' ? "Create Account" : "Get OTP"}
+                  <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </Button>
               </form>
 
-              {/* Quick Demo Section */}
-              <div className="mt-8">
-                <div className="relative">
-                  <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-gray-200"></div>
-                  </div>
-                  <div className="relative flex justify-center">
-                    <span className="px-4 bg-white text-sm font-medium text-gray-500">
-                      Quick Demo Access
-                    </span>
-                  </div>
-                </div>
-
-                <div className="mt-4">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="w-full h-11 border-gray-300 hover:border-indigo-300 hover:bg-indigo-50 transition-colors"
-                    onClick={() => demoLogin("demo@trackit.com")}
-                    disabled={isLoading}
-                  >
-                    <div className="flex items-center justify-center gap-2">
-                      <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                      Try Demo Account
-                    </div>
-                  </Button>
-                  
-                  <p className="mt-3 text-xs text-center text-gray-500">
-                    Demo credentials will be automatically filled
+              {/* Toggle Between Login and Sign Up (Customers) */}
+              <div className="mt-8 pt-6 border-t border-slate-100 text-center space-y-3">
+                {mode === 'login' ? (
+                  <p className="text-xs font-bold text-slate-500">
+                    New to TrackIt? 
+                    <button onClick={() => setMode('signup')} className="ml-2 text-slate-950 underline decoration-yellow-400 underline-offset-4">
+                      Create Customer Account
+                    </button>
                   </p>
-                </div>
+                ) : (
+                  <button onClick={() => setMode('login')} className="text-xs font-bold text-slate-950 flex items-center justify-center mx-auto gap-2">
+                    <KeyRound className="w-3 h-3" /> Back to Login
+                  </button>
+                )}
+                
+                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em]">
+                  {mode === 'login' ? 'Authorized Access Only' : 'Customer Registration Only'}
+                </p>
               </div>
-
-             
-
-              
             </CardContent>
           </Card>
-
-          {/* Security Footer */}
-          <div className="mt-6 flex items-center justify-center gap-4 text-xs text-gray-500">
-            <div className="flex items-center gap-1.5">
-              <Lock className="w-3.5 h-3.5" />
-              <span>SSL Secured</span>
-            </div>
-            <div className="w-1 h-1 bg-gray-300 rounded-full"></div>
-            <div className="flex items-center gap-1.5">
-              <Shield className="w-3.5 h-3.5" />
-              <span>GDPR Compliant</span>
-            </div>
-          </div>
         </div>
       </div>
     </div>

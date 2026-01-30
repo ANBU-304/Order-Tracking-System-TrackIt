@@ -4,7 +4,7 @@ import {
   Search,
   MessageCircle,
   Mail,
-  HelpCircle,
+  LifeBuoy,
   ChevronDown,
   ChevronUp,
   Phone,
@@ -14,9 +14,6 @@ import {
 import {
   Card,
   CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
 } from "./ui/Card";
 import { Input } from "./ui/Input";
 import { Button } from "./ui/Button";
@@ -30,234 +27,145 @@ export function HelpCenter() {
     {
       category: "Tracking",
       question: "How do I track my order?",
-      answer:
-        "You can track your order by entering your tracking number on the homepage. You will receive tracking information via email once your order has been shipped.",
+      answer: "Enter your tracking number on the homepage. You will receive tracking updates via email once your order has been shipped.",
     },
     {
       category: "Tracking",
       question: "Why is my tracking not updating?",
-      answer:
-        "Tracking information may take 24-48 hours to update after your order is shipped. If it has been longer than this, please contact our support team.",
+      answer: "Information usually updates within 24-48 hours. If your status is stuck longer, please contact our logistics desk.",
     },
     {
       category: "Delivery",
-      question: "What should I do if my package is delayed?",
-      answer:
-        "If your package is delayed beyond the estimated delivery date, please check your tracking information for updates. If the delay persists, contact our support team with your order details.",
-    },
-    {
-      category: "Delivery",
-      question: "Can I change my delivery address?",
-      answer:
-        "You can change your delivery address before the package is shipped. Once shipped, please contact the carrier directly or our support team for assistance.",
+      question: "What if my package is delayed?",
+      answer: "Check your tracking for carrier alerts. If the delay exceeds 3 business days, our support team can initiate a trace.",
     },
     {
       category: "Account",
-      question: "How do I reset my password?",
-      answer:
-        'Click on "Forgot Password" on the login page. You will receive an email with instructions to reset your password.',
-    },
-    {
-      category: "Account",
-      question: "How do I update my profile information?",
-      answer:
-        'Go to your profile page and click on "Personal Details" to update your information including name, email, phone number, and address.',
+      question: "How do I update my profile?",
+      answer: "Visit your Profile Settings to manage personal details, addresses, and notification preferences.",
     },
     {
       category: "Returns",
       question: "How do I return a package?",
-      answer:
-        "Contact our support team to initiate a return. You will receive a return label and instructions via email. Most items can be returned within 30 days of delivery.",
-    },
-    {
-      category: "Returns",
-      question: "When will I receive my refund?",
-      answer:
-        "Refunds are typically processed within 5-7 business days after we receive your return. You will receive a confirmation email once the refund has been processed.",
+      answer: "Initiate a return through your 'My Orders' dashboard. Most items are eligible for return within 30 days.",
     },
   ];
 
-  const filteredFAQs = faqs.filter(
-    (faq) =>
+  const filteredFAQs = faqs.filter((faq) => {
+    return (
       faq.question.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      faq.answer.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      faq.category.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  const categories = [...new Set(faqs.map((faq) => faq.category))];
+      faq.answer.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  });
 
   const contactOptions = [
-    {
-      icon: MessageCircle,
-      title: "Live Chat",
-      description: "Chat with our support team",
-      action: () => navigate("/support/contact"),
-      color: "from-indigo-500 to-purple-500",
-    },
-    {
-      icon: Mail,
-      title: "Email Support",
-      description: "Get help via email",
-      action: () => navigate("/support/contact"),
-      color: "from-green-500 to-emerald-500",
-    },
-    {
-      icon: Phone,
-      title: "Phone Support",
-      description: "Call us: 1-800-TRACKIT",
-      action: () => navigate("/support/contact"),
-      color: "from-blue-500 to-cyan-500",
-    },
-    {
-      icon: FileText,
-      title: "Report an Issue",
-      description: "Submit a detailed report",
-      action: () => navigate("/support/report"),
-      color: "from-orange-500 to-red-500",
-    },
+    { icon: MessageCircle, title: "Live Chat", desc: "Available 24/7", action: () => navigate("/support/contact") },
+    { icon: Mail, title: "Email Support", desc: "Avg response: 2h", action: () => navigate("/support/contact") },
+    { icon: Phone, title: "Hotline", desc: "1-800-TRACKIT", action: () => navigate("/support/contact") },
+    { icon: FileText, title: "Report Issue", desc: "Submit a claim", action: () => navigate("/support/report") },
   ];
 
   return (
-    <div className="min-h-[calc(100vh-4rem)] bg-linear-to-br from-indigo-50 via-white to-purple-50 py-8">
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="text-center mb-8 animate-slide-in">
-          <div className="w-16 h-16 gradient-primary rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
-            <HelpCircle className="w-8 h-8 text-white" />
+    <div className="min-h-screen bg-slate-50 py-12">
+      <div className="max-w-4xl mx-auto px-4">
+        
+        {/* Header Section */}
+        <div className="text-center mb-12">
+          <div className="w-16 h-16 bg-slate-900 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-xl shadow-slate-200">
+            <LifeBuoy className="w-8 h-8 text-yellow-400" />
           </div>
-          <h1 className="mb-2 bg-linear-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">Help Center</h1>
-          <p className="text-gray-600">Find answers to common questions and get support</p>
+          <h1 className="text-4xl font-black text-slate-900 tracking-tighter uppercase mb-3">
+            Help <span className="text-yellow-500 text-5xl">.</span> Center
+          </h1>
+          <p className="text-slate-500 font-bold uppercase tracking-widest text-[10px]">
+            Expert Logistics Support & Knowledge Base
+          </p>
         </div>
 
-        {/* Search Bar */}
-        <Card className="border-0 shadow-xl mb-8 overflow-hidden animate-scale-in">
-          <div className="absolute top-0 left-0 right-0 h-1 gradient-primary"></div>
-          <CardContent className="pt-6">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-              <Input
-                placeholder="Search for help articles, FAQs, or topics..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 h-12 border-gray-200 focus:border-indigo-500 focus:ring-indigo-500"
-              />
-            </div>
-          </CardContent>
-        </Card>
+        {/* Search Bar Only */}
+        <div className="relative mb-12">
+          <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+            <Search className="h-5 w-5 text-slate-400" />
+          </div>
+          <Input
+            placeholder="Search for answers (e.g., 'delay', 'tracking', 'refund')..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="block w-full pl-12 pr-4 py-6 bg-white border-slate-200 rounded-2xl shadow-2xl shadow-slate-200/50 text-slate-900 font-medium placeholder:text-slate-400 focus:ring-yellow-400 focus:border-yellow-400 text-lg transition-all"
+          />
+        </div>
 
-        {/* Contact Options */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          {contactOptions.map((option, index) => (
-            <Card
-              key={index}
-              className="border-0 shadow-md hover:shadow-xl transition-all cursor-pointer group overflow-hidden animate-scale-in"
-              style={{ animationDelay: `${index * 0.1}s` }}
-              onClick={option.action}
+        {/* Contact Grid */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-16">
+          {contactOptions.map((opt, i) => (
+            <button
+              key={i}
+              onClick={opt.action}
+              className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm hover:shadow-xl hover:border-yellow-400 transition-all group text-center"
             >
-              <div className={`absolute top-0 left-0 right-0 h-1 bg-linear-to-r ${option.color}`}></div>
-              <CardContent className="pt-6 text-center">
-                <div className={`w-12 h-12 rounded-xl bg-linear-to-br ${option.color} flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform shadow-lg`}>
-                  <option.icon className="w-6 h-6 text-white" />
-                </div>
-                <h3 className="font-semibold mb-1 group-hover:text-indigo-600 transition-colors">{option.title}</h3>
-                <p className="text-sm text-gray-600">{option.description}</p>
-              </CardContent>
-            </Card>
+              <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center mx-auto mb-4 group-hover:bg-slate-900 transition-colors">
+                <opt.icon className="w-5 h-5 text-slate-900 group-hover:text-yellow-400 transition-colors" />
+              </div>
+              <p className="text-xs font-black text-slate-900 uppercase tracking-tight mb-1">{opt.title}</p>
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">{opt.desc}</p>
+            </button>
           ))}
         </div>
 
-        {/* FAQ Sections */}
-        {categories.map((category, catIndex) => (
-          <Card key={category} className="border-0 shadow-xl mb-6 overflow-hidden animate-slide-in" style={{ animationDelay: `${catIndex * 0.1}s` }}>
-            <div className="absolute top-0 left-0 right-0 h-1 gradient-success"></div>
-            <CardHeader>
-              <CardTitle>{category}</CardTitle>
-              <CardDescription>
-                {filteredFAQs.filter(faq => faq.category === category).length} articles
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              {filteredFAQs
-                .filter(faq => faq.category === category)
-                .map((faq) => {
-                  const faqIndex = faqs.indexOf(faq);
-                  const isExpanded = expandedFAQ === faqIndex;
-                  
-                  return (
-                    <div
-                      key={faqIndex}
-                      className="border border-gray-200 rounded-lg overflow-hidden hover:border-indigo-300 transition-colors"
-                    >
-                      <button
-                        onClick={() => setExpandedFAQ(isExpanded ? null : faqIndex)}
-                        className="w-full px-4 py-3 flex items-center justify-between hover:bg-gray-50 transition-colors"
-                      >
-                        <span className="font-medium text-left">{faq.question}</span>
-                        {isExpanded ? (
-                          <ChevronUp className="w-5 h-5 text-gray-400 shrink-0" />
-                        ) : (
-                          <ChevronDown className="w-5 h-5 text-gray-400 shrink-0" />
-                        )}
-                      </button>
-                      {isExpanded && (
-                        <div className="px-4 py-3 bg-gray-50 border-t border-gray-200 animate-slide-in">
-                          <p className="text-gray-700">{faq.answer}</p>
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-            </CardContent>
-          </Card>
-        ))}
+        {/* FAQ List */}
+        <div className="space-y-3">
+          <div className="flex items-center gap-4 mb-8">
+            <h2 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] whitespace-nowrap">
+              Frequently Asked
+            </h2>
+            <div className="h-px w-full bg-slate-200" />
+          </div>
 
-        {/* No Results */}
-        {filteredFAQs.length === 0 && searchTerm && (
-          <Card className="border-0 shadow-xl text-center py-12">
-            <CardContent>
-              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Search className="w-8 h-8 text-gray-400" />
+          {filteredFAQs.map((faq, index) => (
+            <div
+              key={index}
+              className="bg-white rounded-2xl border border-slate-100 overflow-hidden transition-all duration-300"
+            >
+              <button
+                onClick={() => setExpandedFAQ(expandedFAQ === index ? null : index)}
+                className="w-full px-6 py-5 flex items-center justify-between text-left group"
+              >
+                <div className="flex items-center gap-4">
+                  <div className={`w-1.5 h-1.5 rounded-full transition-colors ${expandedFAQ === index ? 'bg-yellow-400' : 'bg-slate-300'}`} />
+                  <span className="font-bold text-slate-900 text-sm tracking-tight">{faq.question}</span>
+                </div>
+                {expandedFAQ === index ? (
+                  <ChevronUp className="w-5 h-5 text-slate-900" />
+                ) : (
+                  <ChevronDown className="w-5 h-5 text-slate-400 group-hover:text-slate-900" />
+                )}
+              </button>
+              
+              <div 
+                className={`px-6 transition-all duration-300 ease-in-out ${
+                  expandedFAQ === index ? 'max-h-40 pb-6 opacity-100' : 'max-h-0 opacity-0'
+                } overflow-hidden`}
+              >
+                <div className="pt-2 text-slate-500 text-sm leading-relaxed font-medium">
+                  {faq.answer}
+                </div>
               </div>
-              <h3 className="font-semibold mb-2">No results found</h3>
-              <p className="text-gray-600 mb-4">
-                We couldn't find any articles matching "{searchTerm}"
-              </p>
-              <Button 
-                onClick={() => navigate('/support/contact')}
-                className="gradient-primary hover:opacity-90"
-              >
-                Contact Support
-              </Button>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Still Need Help */}
-        <Card className="border-0 shadow-xl overflow-hidden">
-          <div className="absolute top-0 left-0 right-0 h-1 gradient-info"></div>
-          <CardContent className="pt-6 text-center">
-            <h3 className="font-semibold mb-2">Still need help?</h3>
-            <p className="text-gray-600 mb-4">
-              Our support team is available 24/7 to assist you
-            </p>
-            <div className="flex flex-col sm:flex-row gap-3 justify-center">
-              <Button 
-                onClick={() => navigate('/support/contact')}
-                className="gradient-primary hover:opacity-90"
-              >
-                <MessageCircle className="w-4 h-4 mr-2" />
-                Contact Support
-              </Button>
-              <Button 
-                variant="outline"
-                onClick={() => navigate('/support/report')}
-              >
-                <FileText className="w-4 h-4 mr-2" />
-                Report an Issue
-              </Button>
             </div>
-          </CardContent>
-        </Card>
+          ))}
+
+          {filteredFAQs.length === 0 && (
+            <div className="text-center py-16 bg-white rounded-3xl border-2 border-dashed border-slate-100">
+               <p className="text-slate-400 font-bold uppercase tracking-widest text-xs">No results found for "{searchTerm}"</p>
+               <Button 
+                variant="ghost" 
+                onClick={() => setSearchTerm("")}
+                className="mt-4 text-yellow-600 font-bold hover:bg-yellow-50"
+               >
+                 Clear Search
+               </Button>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

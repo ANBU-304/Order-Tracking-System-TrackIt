@@ -24,6 +24,8 @@ import ReportIssue from "./TrackIt/ReportIssue";
 
 import { Toaster } from "sonner";
 import "./index.css";
+import { SupportPortal } from "./TrackIt/SupportPortal";
+import { NotificationFeed } from "./TrackIt/NotificationFeed";
 
 /* ---------- Protected Route ---------- */
 function ProtectedRoute({ children }) {
@@ -36,16 +38,16 @@ function AppRoutes() {
   return (
     <>
       <Navigation />
-
       <Routes>
         {/* Public Routes */}
         <Route path="/" element={<PublicTracking />} />
         <Route path="/login" element={<Login />} />
         <Route path="/order/:id" element={<OrderDetails />} />
         <Route path="/help" element={<HelpCenter />} />
+        <Route path="dashboard/support" element={<SupportPortal/>} />
         <Route path="/support/contact" element={<ContactSupport />} />
         <Route path="/support/report" element={<ReportIssue />} />
-
+<Route path="/notification" element={<NotificationFeed/>} />
         {/* Protected Routes */}
         <Route
           path="/dashboard/*"
