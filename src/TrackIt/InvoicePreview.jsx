@@ -1,161 +1,148 @@
-import { X, Download, Package } from "lucide-react";
+import React from 'react';
+import { X, Download, Printer, FileText, ShieldCheck } from 'lucide-react';
 import { Card, CardContent } from "./ui/Card";
 import { Button } from "./ui/Button";
 import { Separator } from "./ui/Separator";
 
+// NAMED EXPORT: This fixes the "Uncaught SyntaxError"
 export function InvoicePreview({ invoiceData, onClose }) {
-  const subtotal = invoiceData.productPrice * invoiceData.quantity;
-  const total = subtotal + invoiceData.shippingCost + invoiceData.tax;
+  if (!invoiceData) return null;
 
-  const handleDownload = () => {
-    const element = document.getElementById("invoice-content");
-    if (element) {
-      window.print();
-    }
+  const handlePrint = () => {
+    window.print();
   };
 
   return (
-    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-      <Card className="max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
-        {/* Header */}
-        <div className="sticky top-0 bg-white border-b p-4 flex justify-between">
-          <h2 className="text-xl font-bold">Invoice Preview</h2>
+    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-[100] p-4 sm:p-6">
+      <Card className="max-w-4xl w-full bg-white shadow-2xl rounded-2xl overflow-hidden border-none flex flex-col max-h-[95vh]">
+        {/* Modal Header - Action Bar */}
+        <div className="bg-slate-900 px-6 py-4 flex justify-between items-center text-white">
+          <div className="flex items-center gap-3">
+            <div className="bg-yellow-400 p-2 rounded-lg">
+              <FileText className="w-5 h-5 text-slate-900" />
+            </div>
+            <div>
+              <h2 className="text-lg font-bold leading-none">Invoice Preview</h2>
+              <p className="text-[10px] text-slate-400 uppercase tracking-widest mt-1">Document #{invoiceData.invoiceNumber}</p>
+            </div>
+          </div>
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" onClick={handleDownload}>
-              <Download className="w-4 h-4 mr-2" />
-              Download PDF
+            <Button 
+              variant="ghost" 
+              onClick={handlePrint}
+              className="text-white hover:bg-slate-800 hidden sm:flex"
+            >
+              <Printer className="w-4 h-4 mr-2" /> Print
             </Button>
-            <button onClick={onClose}>
-              <X />
+            <Button 
+              className="bg-yellow-400 text-slate-900 hover:bg-yellow-500 font-bold"
+            >
+              <Download className="w-4 h-4 mr-2" /> Download PDF
+            </Button>
+            <Separator orientation="vertical" className="h-8 bg-slate-700 mx-2" />
+            <button 
+              onClick={onClose} 
+              className="p-1 hover:bg-slate-800 rounded-full transition-colors"
+            >
+              <X className="w-6 h-6" />
             </button>
           </div>
         </div>
 
-        <CardContent className="p-8" id="invoice-content">
-          {/* Company Header */}
-          <div className="flex justify-between mb-8">
-            <div>
-              <div className="flex items-center gap-3 mb-2">
-                <div className="bg-indigo-600 p-2 rounded-xl">
-                  <Package className="w-8 h-8 text-white" />
+        {/* Scrollable Invoice Content */}
+        <CardContent className="overflow-y-auto p-8 sm:p-12 bg-slate-50">
+          <div className="bg-white shadow-sm border border-slate-200 rounded-sm p-8 sm:p-12 min-h-[800px] mx-auto max-w-[800px]">
+            {/* Invoice Branding */}
+            <div className="flex justify-between items-start mb-12">
+              <div>
+                <h1 className="text-4xl font-black text-slate-900 tracking-tighter mb-2">TRACKIT<span className="text-yellow-500">.</span></h1>
+                <p className="text-slate-500 text-sm">Global Logistics Solutions</p>
+              </div>
+              <div className="text-right">
+                <h3 className="text-2xl font-bold text-slate-900 uppercase">Invoice</h3>
+                <p className="text-slate-500 font-mono text-sm">{invoiceData.date}</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-12 mb-12">
+              <div>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Sender</p>
+                <div className="text-sm text-slate-600 space-y-1">
+                  <p className="font-bold text-slate-900">TrackIt Logistics HQ</p>
+                  <p>450 Logistics Blvd,</p>
+                  <p>Supply Chain City, 10001</p>
+                  <p>United States</p>
                 </div>
-                <div>
-                  <h1 className="text-3xl font-bold text-indigo-600">TrackIt</h1>
-                  <p className="text-sm text-gray-600">Logistics & Delivery</p>
+              </div>
+              <div>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Ship To</p>
+                <div className="text-sm text-slate-600 space-y-1">
+                  <p className="font-bold text-slate-900">{invoiceData.customerName}</p>
+                  <p>{invoiceData.address}</p>
+                  <p>Order ID: {invoiceData.orderId}</p>
                 </div>
               </div>
-              <p className="text-sm text-gray-600">123 Business Street</p>
-              <p className="text-sm text-gray-600">San Francisco, CA 94102</p>
-              <p className="text-sm text-gray-600">support@trackit.com</p>
-              <p className="text-sm text-gray-600">+1-800-TRACKIT</p>
             </div>
 
-            <div className="text-right">
-              <div className="px-4 py-2 bg-indigo-100 rounded-lg mb-3">
-                <p className="text-xs text-gray-600">Invoice Number</p>
-                <p className="text-xl font-bold text-indigo-600">
-                  {invoiceData.invoiceNumber}
-                </p>
+            {/* Table Header */}
+            <div className="grid grid-cols-12 bg-slate-900 text-white p-3 rounded-t-lg text-[10px] font-bold uppercase tracking-widest">
+              <div className="col-span-6">Description</div>
+              <div className="col-span-2 text-center">Qty</div>
+              <div className="col-span-2 text-right">Rate</div>
+              <div className="col-span-2 text-right">Amount</div>
+            </div>
+
+            {/* Table Body */}
+            <div className="border-x border-slate-100">
+              {invoiceData.items?.map((item, index) => (
+                <div key={index} className="grid grid-cols-12 p-4 border-b border-slate-50 text-sm text-slate-700 items-center">
+                  <div className="col-span-6">
+                    <p className="font-bold text-slate-900">{item.name}</p>
+                    <p className="text-xs text-slate-400">{item.description}</p>
+                  </div>
+                  <div className="col-span-2 text-center">{item.qty}</div>
+                  <div className="col-span-2 text-right">₹{item.rate.toFixed(2)}</div>
+                  <div className="col-span-2 text-right font-bold">₹{item.amount.toFixed(2)}</div>
+                </div>
+              ))}
+            </div>
+
+            {/* Totals Section */}
+            <div className="flex justify-end mt-8">
+              <div className="w-full max-w-[240px] space-y-3">
+                <div className="flex justify-between text-sm text-slate-500">
+                  <span>Subtotal</span>
+                  <span>₹{invoiceData.subtotal.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between text-sm text-slate-500">
+                  <span>Tax (5%)</span>
+                  <span>₹{invoiceData.tax.toFixed(2)}</span>
+                </div>
+                <Separator className="bg-slate-100" />
+                <div className="flex justify-between text-lg font-black text-slate-900">
+                  <span>Total</span>
+                  <span className="text-yellow-600">₹{invoiceData.total.toFixed(2)}</span>
+                </div>
               </div>
-              <p className="text-sm text-gray-600">
-                <b>Date:</b> {invoiceData.invoiceDate}
+            </div>
+
+            {/* Note */}
+            <div className="mt-20 pt-8 border-t border-slate-100">
+              <div className="flex items-center gap-2 mb-2 text-slate-900">
+                <ShieldCheck className="w-4 h-4 text-green-500" />
+                <p className="text-xs font-bold uppercase tracking-widest">Terms & Conditions</p>
+              </div>
+              <p className="text-[10px] text-slate-400 leading-relaxed">
+                This is a computer-generated document. No signature is required. All shipping services are subject to the TrackIt Standard Terms of Carriage. Payments are non-refundable once the shipment has reached the "In Transit" status.
               </p>
-              <p className="text-sm text-gray-600">
-                <b>Order ID:</b> {invoiceData.orderId}
-              </p>
             </div>
-          </div>
-
-          <Separator className="my-6" />
-
-          {/* Customer */}
-          <div className="grid md:grid-cols-2 gap-6 mb-8">
-            <div>
-              <h3 className="font-semibold mb-2">Bill To</h3>
-              <p className="font-medium">{invoiceData.customerName}</p>
-              <p className="text-sm text-gray-600">{invoiceData.customerEmail}</p>
-              <p className="text-sm text-gray-600">{invoiceData.customerPhone}</p>
-            </div>
-            <div>
-              <h3 className="font-semibold mb-2">Ship To</h3>
-              <p className="text-sm text-gray-600">
-                {invoiceData.shippingAddress}
-              </p>
-            </div>
-          </div>
-
-          {/* Items */}
-          <table className="w-full mb-8">
-            <thead>
-              <tr className="border-b">
-                <th className="text-left py-3">Description</th>
-                <th className="text-center py-3">Weight</th>
-                <th className="text-center py-3">Qty</th>
-                <th className="text-right py-3">Price</th>
-                <th className="text-right py-3">Amount</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr className="border-b">
-                <td className="py-4">{invoiceData.productName}</td>
-                <td className="py-4 text-center">{invoiceData.productWeight}</td>
-                <td className="py-4 text-center">{invoiceData.quantity}</td>
-                <td className="py-4 text-right">
-                  ₹{invoiceData.productPrice.toFixed(2)}
-                </td>
-                <td className="py-4 text-right font-medium">
-                  ₹{subtotal.toFixed(2)}
-                </td>
-              </tr>
-            </tbody>
-          </table>
-
-          {/* Totals */}
-          <div className="flex justify-end">
-            <div className="w-full md:w-1/2 space-y-2">
-              <div className="flex justify-between">
-                <span>Subtotal</span>
-                <span>₹{subtotal.toFixed(2)}</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Shipping</span>
-                <span>₹{invoiceData.shippingCost.toFixed(2)}</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Tax</span>
-                <span>₹{invoiceData.tax.toFixed(2)}</span>
-              </div>
-              <Separator />
-              <div className="flex justify-between font-bold text-lg">
-                <span>Total</span>
-                <span className="text-indigo-600">
-                  ₹{total.toFixed(2)}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {/* Payment Status */}
-          <div className="mt-8 p-4 bg-indigo-50 rounded-lg">
-            <p className="text-sm text-gray-600">Payment Status</p>
-            <p
-              className={`text-lg font-semibold ${
-                invoiceData.paymentStatus === "Paid"
-                  ? "text-green-600"
-                  : invoiceData.paymentStatus === "Pending"
-                  ? "text-yellow-600"
-                  : "text-red-600"
-              }`}
-            >
-              {invoiceData.paymentStatus}
-            </p>
-          </div>
-
-          {/* Footer */}
-          <div className="mt-8 pt-6 border-t text-center text-sm text-gray-600">
-            Thank you for choosing TrackIt!
           </div>
         </CardContent>
+
+        {/* Footer info */}
+        <div className="p-4 bg-white border-t border-slate-100 text-center text-[10px] text-slate-400 font-medium">
+          Securely generated via TrackIt Financial Gateway • © 2026 TrackIt Logistics Inc.
+        </div>
       </Card>
     </div>
   );

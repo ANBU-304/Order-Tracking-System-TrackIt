@@ -1,7 +1,6 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
-  ArrowLeft,
   Globe,
   Shield,
   Bell,
@@ -10,198 +9,209 @@ import {
   Smartphone,
   Monitor,
   Save,
-} from "lucide-react";
+  Zap,
+  Lock,
+  Eye,
+  RefreshCw
+} from 'lucide-react';
+
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/Card';
+import { Button } from './ui/Button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/Select';
+import { Label } from './ui/Label';
+import { toast } from 'sonner';
+import { Layout } from './Layout';
 
 export default function Settings() {
   const navigate = useNavigate();
   const [isSaving, setIsSaving] = useState(false);
 
   const [settings, setSettings] = useState({
-    language: "en",
-    region: "in",
-    timezone: "Asia/Kolkata",
-    theme: "light",
+    language: 'en',
+    region: 'us',
+    timezone: 'America/New_York',
+    theme: 'light',
     autoUpdate: true,
     notifications: true,
     twoFactor: false,
-    dataSharing: false,
+    dataSharing: false
   });
 
   const handleSave = async () => {
     setIsSaving(true);
     await new Promise((r) => setTimeout(r, 1000));
     setIsSaving(false);
-    alert("✅ Settings saved successfully!");
+    toast.success('System configuration synchronized successfully');
   };
 
   const themes = [
-    { id: "light", label: "Light", icon: Sun },
-    { id: "dark", label: "Dark", icon: Moon },
-    { id: "auto", label: "Auto", icon: Monitor },
+    { id: 'light', label: 'Day Mode', icon: Sun },
+    { id: 'dark', label: 'Night Ops', icon: Moon },
+    { id: 'auto', label: 'System Sync', icon: Monitor }
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      {/* Back */}
-      <button
-        onClick={() => navigate("/profile")}
-        className="flex items-center gap-2 mb-4 text-gray-600 hover:text-blue-600"
-      >
-        <ArrowLeft size={18} /> Back
-      </button>
+    <div className="min-h-screen bg-slate-50 flex">
+      <Layout />
 
-      <h1 className="text-3xl font-bold mb-6">Settings</h1>
+      <main className="flex-1 p-8 overflow-auto">
+        <div className="max-w-4xl mx-auto">
+          
+          {/* Header */}
+          <div className="mb-10">
+            <h1 className="text-4xl font-black text-slate-900 tracking-tighter uppercase mb-2">
+              System <span className="text-yellow-500">Config</span>
+            </h1>
+            <p className="text-slate-500 font-bold uppercase tracking-widest text-[10px]">
+              Manage global operational parameters and terminal preferences
+            </p>
+          </div>
 
-      {/* Language & Region */}
-      <Section icon={<Globe />} title="Language & Region">
-        <Select
-          label="Language"
-          value={settings.language}
-          onChange={(v) => setSettings({ ...settings, language: v })}
-          options={[
-            ["en", "English"],
-            ["ta", "Tamil"],
-            ["hi", "Hindi"],
-          ]}
-        />
+          <div className="grid grid-cols-1 gap-6 mb-8">
+            {/* Language & Region */}
+            <Card className="border-none shadow-sm bg-white rounded-2xl overflow-hidden relative">
+              <div className="h-1.5 w-full bg-slate-900" />
+              <CardHeader className="px-8 pt-8">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-xl bg-slate-50 flex items-center justify-center shadow-inner">
+                    <Globe className="w-6 h-6 text-slate-900" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-lg font-black uppercase tracking-tight">Localization</CardTitle>
+                    <CardDescription className="text-[10px] font-bold uppercase text-slate-400">Regional Data Nodes</CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="px-8 pb-8 space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Display Language</Label>
+                    <Select value={settings.language} onValueChange={(value) => setSettings(prev => ({ ...prev, language: value }))}>
+                      <SelectTrigger className="bg-slate-50 border-slate-100 rounded-xl h-12">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="en">English (US)</SelectItem>
+                        <SelectItem value="de">Deutsch</SelectItem>
+                        <SelectItem value="ja">日本語</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Operational Region</Label>
+                    <Select value={settings.region} onValueChange={(value) => setSettings(prev => ({ ...prev, region: value }))}>
+                      <SelectTrigger className="bg-slate-50 border-slate-100 rounded-xl h-12">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="us">North America</SelectItem>
+                        <SelectItem value="eu">European Union</SelectItem>
+                        <SelectItem value="in">India (APAC)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
 
-        <Select
-          label="Region"
-          value={settings.region}
-          onChange={(v) => setSettings({ ...settings, region: v })}
-          options={[
-            ["in", "India"],
-            ["us", "USA"],
-            ["uk", "UK"],
-          ]}
-        />
-      </Section>
+            {/* Appearance */}
+            <Card className="border-none shadow-sm bg-white rounded-2xl overflow-hidden">
+              <div className="h-1.5 w-full bg-yellow-500" />
+              <CardHeader className="px-8 pt-8">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-xl bg-slate-50 flex items-center justify-center shadow-inner">
+                    <Eye className="w-6 h-6 text-slate-900" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-lg font-black uppercase tracking-tight">UI Interface</CardTitle>
+                    <CardDescription className="text-[10px] font-bold uppercase text-slate-400">Terminal Visualization</CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="px-8 pb-8">
+                <div className="grid grid-cols-3 gap-4">
+                  {themes.map((theme) => (
+                    <button
+                      key={theme.id}
+                      onClick={() => setSettings(prev => ({ ...prev, theme: theme.id }))}
+                      className={`p-6 rounded-2xl border-2 transition-all flex flex-col items-center gap-3 ${
+                        settings.theme === theme.id
+                          ? 'border-slate-900 bg-slate-900 text-yellow-400'
+                          : 'border-slate-100 bg-white text-slate-400 hover:border-slate-200'
+                      }`}
+                    >
+                      <theme.icon className="w-6 h-6" />
+                      <span className="text-[10px] font-black uppercase tracking-widest">{theme.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
 
-      {/* Appearance */}
-      <Section icon={<Smartphone />} title="Appearance">
-        <div className="grid grid-cols-3 gap-4">
-          {themes.map((t) => (
-            <button
-              key={t.id}
-              onClick={() => setSettings({ ...settings, theme: t.id })}
-              className={`border rounded-lg p-4 ${
-                settings.theme === t.id
-                  ? "border-blue-500 bg-blue-50"
-                  : "border-gray-300"
-              }`}
+            {/* Privacy & Security */}
+            <Card className="border-none shadow-sm bg-white rounded-2xl overflow-hidden">
+              <div className="h-1.5 w-full bg-slate-900" />
+              <CardHeader className="px-8 pt-8">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-xl bg-slate-50 flex items-center justify-center shadow-inner">
+                    <Lock className="w-6 h-6 text-slate-900" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-lg font-black uppercase tracking-tight">Security Protocol</CardTitle>
+                    <CardDescription className="text-[10px] font-bold uppercase text-slate-400">Access & Data Encryption</CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="px-8 pb-8 space-y-3">
+                {[
+                  { key: 'twoFactor', label: '2FA Auth Nodes', desc: 'Secure secondary verification link' },
+                  { key: 'dataSharing', label: 'Telemetry Sharing', desc: 'Allow anonymous system diagnostic data' }
+                ].map((item) => (
+                  <div key={item.key} className="flex items-center justify-between p-4 bg-slate-50 rounded-xl border border-slate-100/50">
+                    <div>
+                      <p className="text-[11px] font-black uppercase tracking-tight text-slate-900">{item.label}</p>
+                      <p className="text-[10px] font-medium text-slate-400">{item.desc}</p>
+                    </div>
+                    <button
+                      onClick={() => setSettings(prev => ({ ...prev, [item.key]: !prev[item.key] }))}
+                      className={`relative w-12 h-6 rounded-full transition-all ${
+                        settings[item.key] ? 'bg-yellow-500 shadow-[0_0_10px_rgba(234,179,8,0.4)]' : 'bg-slate-200'
+                      }`}
+                    >
+                      <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-transform ${
+                        settings[item.key] ? 'translate-x-7' : 'translate-x-1'
+                      }`} />
+                    </button>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex flex-col sm:flex-row gap-4">
+            <Button
+              variant="outline"
+              className="flex-1 border-slate-200 text-slate-500 font-bold uppercase text-[10px] tracking-widest h-14 rounded-xl"
+              onClick={() => navigate('/profile')}
             >
-              <t.icon className="mx-auto mb-2" />
-              {t.label}
-            </button>
-          ))}
+              Discard Changes
+            </Button>
+            <Button
+              className="flex-1 bg-slate-900 text-yellow-400 hover:bg-slate-800 font-black uppercase text-[10px] tracking-widest h-14 rounded-xl shadow-xl shadow-slate-200"
+              onClick={handleSave}
+              disabled={isSaving}
+            >
+              {isSaving ? (
+                <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+              ) : (
+                <Zap className="w-4 h-4 mr-2" />
+              )}
+              {isSaving ? 'Syncing...' : 'Apply Configuration'}
+            </Button>
+          </div>
         </div>
-      </Section>
-
-      {/* Privacy */}
-      <Section icon={<Shield />} title="Privacy & Security">
-        <Toggle
-          label="Two Factor Authentication"
-          value={settings.twoFactor}
-          onChange={() =>
-            setSettings({ ...settings, twoFactor: !settings.twoFactor })
-          }
-        />
-        <Toggle
-          label="Data Sharing"
-          value={settings.dataSharing}
-          onChange={() =>
-            setSettings({ ...settings, dataSharing: !settings.dataSharing })
-          }
-        />
-      </Section>
-
-      {/* Preferences */}
-      <Section icon={<Bell />} title="App Preferences">
-        <Toggle
-          label="Automatic Updates"
-          value={settings.autoUpdate}
-          onChange={() =>
-            setSettings({ ...settings, autoUpdate: !settings.autoUpdate })
-          }
-        />
-        <Toggle
-          label="Notifications"
-          value={settings.notifications}
-          onChange={() =>
-            setSettings({ ...settings, notifications: !settings.notifications })
-          }
-        />
-      </Section>
-
-      {/* Actions */}
-      <div className="flex gap-3 mt-6">
-        <button
-          onClick={() => navigate("/profile")}
-          className="flex-1 border rounded-lg py-2"
-        >
-          Cancel
-        </button>
-
-        <button
-          onClick={handleSave}
-          disabled={isSaving}
-          className="flex-1 bg-blue-600 text-white rounded-lg py-2"
-        >
-          {isSaving ? "Saving..." : <><Save size={16} /> Save</>}
-        </button>
-      </div>
-    </div>
-  );
-}
-
-/* ---------- Helper Components ---------- */
-
-function Section({ icon, title, children }) {
-  return (
-    <div className="bg-white rounded-xl shadow p-5 mb-6">
-      <h2 className="flex items-center gap-2 text-lg font-semibold mb-4">
-        {icon} {title}
-      </h2>
-      {children}
-    </div>
-  );
-}
-
-function Select({ label, value, onChange, options }) {
-  return (
-    <div className="mb-4">
-      <label className="block mb-1 font-medium">{label}</label>
-      <select
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="w-full border rounded-lg p-2"
-      >
-        {options.map(([v, l]) => (
-          <option key={v} value={v}>
-            {l}
-          </option>
-        ))}
-      </select>
-    </div>
-  );
-}
-
-function Toggle({ label, value, onChange }) {
-  return (
-    <div className="flex justify-between items-center mb-3">
-      <span>{label}</span>
-      <button
-        onClick={onChange}
-        className={`w-12 h-6 rounded-full ${
-          value ? "bg-green-500" : "bg-gray-300"
-        }`}
-      >
-        <div
-          className={`h-5 w-5 bg-white rounded-full transform ${
-            value ? "translate-x-6" : "translate-x-1"
-          }`}
-        />
-      </button>
+      </main>
     </div>
   );
 }

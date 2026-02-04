@@ -19,6 +19,18 @@ export function AuthProvider({ children }) {
         name: "John Smith",
         role: "customer",
       },
+      "admin@trackit.com": {
+        id: "3",
+        email,
+        name: "John Smith",
+        role: "admin",
+      },
+      "support@trackit.com": {
+        id: "2",
+        email,
+        name: "John Smith",
+        role: "support",
+      },
     };
 
     const foundUser = mockUsers[email];

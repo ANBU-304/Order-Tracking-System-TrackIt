@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Package, TrendingUp } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Package, TrendingUp, Scale } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -25,83 +25,99 @@ export function ShippingCalculator({
     return 250 + Math.ceil((weightInKg - 10) / 5) * 100;
   };
 
-  // ✅ Derived value (NO state, NO effect)
   const shippingCost = calculateShipping(weight);
 
-  // ✅ Notify parent safely
-  if (onShippingCostChange) {
-    onShippingCostChange(shippingCost);
-  }
+  
+  useEffect(() => {
+    if (onShippingCostChange) {
+      onShippingCostChange(shippingCost);
+    }
+  }, [shippingCost, onShippingCostChange]);
 
   const getWeightRange = (weightInKg) => {
     if (weightInKg <= 0) return "Enter weight to calculate";
-    if (weightInKg <= 1) return "0-1 kg";
-    if (weightInKg <= 3) return "1-3 kg";
-    if (weightInKg <= 5) return "3-5 kg";
-    if (weightInKg <= 10) return "5-10 kg";
-    return "10+ kg (custom rate)";
+    if (weightInKg <= 1) return "Standard (0-1 kg)";
+    if (weightInKg <= 3) return "Medium (1-3 kg)";
+    if (weightInKg <= 5) return "Heavy (3-5 kg)";
+    if (weightInKg <= 10) return "Bulk (5-10 kg)";
+    return "Freight (10+ kg custom)";
   };
 
   return (
-    <Card className="border-0 shadow-md overflow-hidden relative">
-      <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 to-cyan-500" />
+    <Card className="border-slate-200 shadow-sm overflow-hidden relative bg-white">
+      {/* Top Accent Bar */}
+      <div className="absolute top-0 left-0 right-0 h-1 bg-slate-900" />
 
-      <CardHeader>
+      <CardHeader className="pb-4">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center">
-            <Package className="w-5 h-5 text-white" />
+          <div className="w-10 h-10 rounded-xl bg-slate-900 flex items-center justify-center shadow-lg shadow-slate-200">
+            <Scale className="w-5 h-5 text-yellow-400" />
           </div>
           <div>
-            <CardTitle>Estimated Shipping Cost</CardTitle>
-            <CardDescription>
-              Calculate shipping based on weight
+            <CardTitle className="text-base font-bold text-slate-900">Cost Estimator</CardTitle>
+            <CardDescription className="text-[11px] uppercase font-bold text-slate-400 tracking-tight">
+              Weight-based logistics pricing
             </CardDescription>
           </div>
         </div>
       </CardHeader>
 
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-5">
         <div className="space-y-2">
-          <Label htmlFor="weight">Product Weight (kg)</Label>
-          <Input
-            id="weight"
-            type="number"
-            min="0"
-            step="0.1"
-            value={weight || ""}
-            onChange={(e) =>
-              setWeight(parseFloat(e.target.value) || 0)
-            }
-            placeholder="Enter weight in kg"
-            className="text-lg"
-          />
-          <p className="text-xs text-gray-500">
-            Weight range: {getWeightRange(weight)}
+          <div className="flex justify-between items-center">
+            <Label htmlFor="weight" className="text-xs font-bold text-slate-600">
+              Shipment Weight
+            </Label>
+            <span className="text-[10px] font-mono font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded">
+              UNIT: KG
+            </span>
+          </div>
+          <div className="relative">
+             <Input
+              id="weight"
+              type="number"
+              min="0"
+              step="0.1"
+              value={weight || ""}
+              onChange={(e) => setWeight(parseFloat(e.target.value) || 0)}
+              placeholder="0.00"
+              className="text-lg font-bold border-slate-200 focus:ring-slate-900 focus:border-slate-900 rounded-xl h-12 pr-12"
+            />
+            <div className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-300 font-bold italic">
+              kg
+            </div>
+          </div>
+          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest pl-1">
+            Category: <span className="text-slate-900">{getWeightRange(weight)}</span>
           </p>
         </div>
 
-        <div className="p-4 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-lg">
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-gray-600">Shipping Cost</span>
-            <div className="flex items-center gap-1">
-              <TrendingUp
-                className={`w-4 h-4 ${
-                  shippingCost > 0
-                    ? "text-green-600"
-                    : "text-gray-400"
-                }`}
-              />
+        <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 relative overflow-hidden group">
+          {/* Subtle background icon for design depth */}
+          <TrendingUp className="absolute -right-2 -bottom-2 w-16 h-16 text-slate-200/50 -rotate-12 group-hover:text-yellow-400/20 transition-colors" />
+          
+          <div className="flex items-center justify-between relative z-10">
+            <div className="flex flex-col">
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Estimated Total</span>
+              <span className="text-xs text-slate-500 font-medium italic">Incl. fuel surcharge</span>
+            </div>
+            <div className="flex flex-col items-end">
               <span
-                className={`text-2xl font-bold ${
-                  shippingCost > 0
-                    ? "text-indigo-600"
-                    : "text-gray-400"
+                className={`text-2xl font-black transition-colors ${
+                  shippingCost > 0 ? "text-slate-900" : "text-slate-300"
                 }`}
               >
                 ₹{shippingCost.toFixed(2)}
               </span>
             </div>
           </div>
+        </div>
+        
+        <div className="flex items-center gap-2 px-1">
+          <div className="w-1.5 h-1.5 rounded-full bg-yellow-400 animate-pulse" />
+          <span className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">
+            Rates are subject to real-time fuel fluctuations
+          </span>
         </div>
       </CardContent>
     </Card>
