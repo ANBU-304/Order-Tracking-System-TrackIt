@@ -10,6 +10,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { Button } from "./ui/Button";
+import { Layout } from "./Layout";
 
 export default function ChangePassword() {
   const navigate = useNavigate();
@@ -45,8 +46,11 @@ export default function ChangePassword() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 py-12 px-4">
-      <div className="max-w-md mx-auto">
+     <div className="min-h-screen bg-slate-50 flex">
+      
+
+  <Layout />
+ <div className="max-w-2xl flex-1 py-8 max-w-4xl mx-auto">
         {/* Header */}
         <button 
           onClick={() => navigate("/profile")} 

@@ -40,7 +40,7 @@ import { Button } from "./ui/Button";
 import { Badge } from "./ui/Badge";
 import { Layout } from "./Layout";
 
-// Data Constants
+
 const deliveryPerformanceData = [
   { month: 'Jan', onTime: 92, delayed: 8 },
   { month: 'Feb', onTime: 94, delayed: 6 },

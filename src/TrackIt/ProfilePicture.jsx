@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/
 import { Button } from "./ui/Button";
 import { useAuth } from "./useAuth";
 import { toast } from "sonner";
+import { Layout } from "./Layout";
 
 export function ProfilePicture() {
   const navigate = useNavigate();
@@ -47,9 +48,11 @@ export function ProfilePicture() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 py-12">
-      <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-slate-50 flex">
+      
 
+  <Layout />
+ <div className="max-w-2xl flex-1 py-8 max-w-4xl mx-auto">
         {/* Themed Back Button */}
         <button
           onClick={() => navigate("/profile")}

@@ -24,7 +24,7 @@ export function Layout() {
     
     { icon: User, label: 'Profile', path: '/profile' },
     { icon: SettingsIcon, label: 'Settings', path: '/settings' },
-    { icon: HelpCircle, label: 'Help & Support', path: '/help' },
+   
   ];
 
   return (

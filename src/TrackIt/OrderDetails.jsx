@@ -26,6 +26,7 @@ import { InvoicePreview } from "./InvoicePreview";
 import { generateSampleInvoice } from "./invoiceUtils";
 import { ShippingCalculator } from "./ShippingCalculator";
 import { PaymentModal } from "./PaymentModal";
+import { toast } from "sonner";
 
 /* ---------------- MOCK DATA ---------------- */
 const mockTrackingData = {
@@ -231,7 +232,6 @@ export function OrderDetails() {
               </CardContent>
             </Card>
 
-            <ShippingCalculator initialWeight={2.5} />
 
             <Card className="border-slate-200 shadow-md bg-white overflow-hidden">
                <div className="h-1 bg-slate-900" />
@@ -268,7 +268,7 @@ export function OrderDetails() {
           amount={90.00}
           orderId={id || data.orderId}
           onClose={() => setPaymentModalOpen(false)}
-          onSuccess={() => alert('Payment Successful!')}
+          onSuccess={() => toast.success("Payment Successful!")}
         />
       )}
     </div>

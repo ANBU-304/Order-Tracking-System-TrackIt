@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {
-  Package, Search, Eye, FileText, AlertCircle, Clock, CheckCircle2, ChevronRight, Download
+import {Package, Search, Eye, FileText, AlertCircle, Clock, CheckCircle2, ChevronRight, Download
 } from 'lucide-react';
 
 import { Card, CardContent } from './ui/Card';
@@ -9,7 +8,7 @@ import { Badge } from './ui/Badge';
 import { Button } from './ui/Button';
 import { Input } from './ui/Input';
 import { Progress } from './ui/Progress';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
+import { Tabs,  TabsList, TabsTrigger } from './ui/tabs';
 import { Layout } from './Layout';
 
 
@@ -41,7 +40,7 @@ const getStatusConfig = (status) => {
 export function CustomerDashboard() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTab, setSelectedTab] = useState('all');
-  const [selectedInvoiceOrder, setSelectedInvoiceOrder] = useState(null); // Proper State Placement
+  const [selectedInvoiceOrder, setSelectedInvoiceOrder] = useState(null);
   const navigate = useNavigate();
 
   const filteredOrders = mockOrders.filter((o) => {
@@ -90,8 +89,7 @@ export function CustomerDashboard() {
                 placeholder="Search ID, Tracking, or Items..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-11 h-12 bg-white border-slate-200 rounded-xl focus:ring-yellow-400"
-              />
+                className="pl-11 h-12 bg-white border-slate-200 rounded-xl focus:ring-yellow-400"/>
             </div>
             
             <Tabs value={selectedTab} onValueChange={setSelectedTab} className="w-auto">

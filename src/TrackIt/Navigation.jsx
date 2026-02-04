@@ -3,7 +3,7 @@ import { Package, Menu, LogOut, User, X, Bell } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button } from './ui/Button';
 import { useAuth } from './useAuth';
-import { NotificationFeed } from './NotificationFeed'; // Import your notification component
+import { NotificationFeed } from './NotificationFeed';
 
 export function Navigation() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -20,15 +20,15 @@ export function Navigation() {
   };
 
   const navLinks = [
-    { label: "Track Order", path: "/", show: true },
+    { label: "Home", path: "/", show:isAuthenticated && !(user?.role === 'customer') && !(user?.role === 'support' ) && !(user?.role === 'admin') },
     { label: "My Orders", path: "/dashboard/customer", show: isAuthenticated && (user?.role === 'customer') },
     { label: "Support Portal", path: "/dashboard/support", show: isAuthenticated && (user?.role === 'support' || user?.role === 'admin') },
     { label: "Analytics", path: "/dashboard/admin", show: isAuthenticated && user?.role === 'admin' },
-    { label: "Help Center", path: "/help", show: true },
+    { label: "Help Center", path: "/help", show:isAuthenticated &&!(user?.role === 'support' ) && !(user?.role === 'admin') },
   ];
 
   return (
-    <nav className="sticky top-0 z-[100] bg-white/20 backdrop-blur-xl h-20">
+    <nav className="sticky top-0 z-[100] bg-white/1 backdrop-blur-xl h-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full">
         <div className="flex justify-between items-center h-full relative">
           
