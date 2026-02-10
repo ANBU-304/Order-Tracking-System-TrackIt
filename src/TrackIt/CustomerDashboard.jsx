@@ -72,6 +72,7 @@ export function CustomerDashboard() {
             <p className="text-slate-500 font-bold uppercase tracking-widest text-[10px] mt-2">
               Logistics Control / {new Date().getFullYear()} Global Systems
             </p>
+            
           </div>
 
           {/* Stats Cards */}

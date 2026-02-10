@@ -157,7 +157,7 @@ export function PaymentModal({ amount, orderId, onClose, onSuccess }) {
           {/* Amount */}
           <div className="mb-6 p-4 bg-indigo-50 rounded-lg">
             <p className="text-sm text-gray-600">Amount to Pay</p>
-            <p className="text-3xl font-bold bg-gradient-to-r from-yellow-600 to-yellow-600 bg-clip-text text-transparent">
+            <p className="text-3xl font-bold bg-linear-to-r from-yellow-600 to-yellow-600 bg-clip-text text-transparent">
               ₹{amount.toFixed(2)}
             </p>
           </div>

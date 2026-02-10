@@ -1,22 +1,25 @@
 import React, { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+// Map Imports
+import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
+
 import {
   MapPin,
   Package,
   Truck,
   CheckCircle2,
   AlertCircle,
-  Phone,
-  Mail,
   Flag,
   CreditCard,
   ChevronLeft,
   FileText, 
-  Clock,  
+  Clock,   
   User 
 } from "lucide-react";
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/Card";
+import { Card, CardContent, CardHeader, CardTitle } from "./ui/Card";
 import { Badge } from "./ui/Badge";
 import { Button } from "./ui/Button";
 import { Progress } from "./ui/Progress";
@@ -24,9 +27,17 @@ import { Separator } from "./ui/Separator";
 
 import { InvoicePreview } from "./InvoicePreview";
 import { generateSampleInvoice } from "./invoiceUtils";
-import { ShippingCalculator } from "./ShippingCalculator";
 import { PaymentModal } from "./PaymentModal";
 import { toast } from "sonner";
+
+// Fix for default Leaflet marker icons in React
+const customIcon = new L.Icon({
+  iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
+  iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
+  shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+});
 
 /* ---------------- MOCK DATA ---------------- */
 const mockTrackingData = {
@@ -36,6 +47,7 @@ const mockTrackingData = {
   estimatedDelivery: "Today by 8:00 PM",
   progress: 75,
   recipientName: "John Smith",
+  coordinates: [11.034344410607908, 76.95390041991644], // San Francisco coordinates
   shippingAddress: "123 Main Street, San Francisco, CA 94102",
   trackingEvents: [
     { id: "1", status: "Out for Delivery", location: "San Francisco, CA", timestamp: "2026-01-03 08:30 AM", description: "Package is on the delivery vehicle" },
@@ -84,11 +96,11 @@ export function OrderDetails() {
             <Button variant="outline" onClick={() => setInvoicePreviewOpen(true)} className="border-slate-200">
               <FileText className="w-4 h-4 mr-2" /> Invoice
             </Button>
-      
           </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          
           {/* Main Tracking Info */}
           <div className="lg:col-span-2 space-y-8">
             <Card className="border-slate-200 shadow-sm overflow-hidden">
@@ -144,33 +156,7 @@ export function OrderDetails() {
               </CardContent>
             </Card>
 
- {/* Map Placeholder */}
-            <Card className="shadow-xl border-0">
-              <CardHeader>
-                <CardTitle>Package Location</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="w-full h-64 bg-gradient-to-br from-yelow-100 via-yellow-50 rounded-xl flex items-center justify-center relative overflow-hidden">
-                  <div className="absolute inset-0 opacity-10">
-                    <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
-                      <path d="M0,50 Q25,30 50,50 T100,50" stroke="#6366F1" strokeWidth="0.5" fill="none" />
-                      <path d="M0,60 Q25,40 50,60 T100,60" stroke="#6366F1" strokeWidth="0.5" fill="none" />
-                      <path d="M20,0 L20,100" stroke="#6366F1" strokeWidth="0.5" />
-                      <path d="M40,0 L40,100" stroke="#6366F1" strokeWidth="0.5" />
-                      <path d="M60,0 L60,100" stroke="#6366F1" strokeWidth="0.5" />
-                      <path d="M80,0 L80,100" stroke="#6366F1" strokeWidth="0.5" />
-                    </svg>
-                  </div>
-                  <div className="relative z-10 text-center">
-                    <div className="w-16 h-16 gradient-primary rounded-full flex items-center justify-center mx-auto mb-3 animate-bounce shadow-lg">
-                      <MapPin className="w-8 h-8 text-white" />
-                    </div>
-                    <p className="text-indigo-600 font-semibold text-lg">San Francisco, CA</p>
-                    <p className="text-sm text-gray-600">Last updated: 8:30 AM</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            
             
             <Card className="border-slate-200 shadow-sm">
               <CardHeader>
@@ -205,6 +191,35 @@ export function OrderDetails() {
                 </div>
               </CardContent>
             </Card>
+            {/* Live Map Card */}
+            <Card className="border-slate-200 shadow-sm overflow-hidden">
+              <CardHeader>
+                <CardTitle>Package Location</CardTitle>
+              </CardHeader>
+              <CardContent className="p-0">
+                <div className="w-full h-80 z-0">
+                  <MapContainer 
+                    center={data.coordinates} 
+                    zoom={12} 
+                    scrollWheelZoom={false}
+                    className="h-full w-full"
+                  >
+                    <TileLayer
+                      attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                      url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                    />
+                    <Marker position={data.coordinates} icon={customIcon}>
+                      <Popup>
+                        <div className="text-xs font-bold uppercase tracking-tight">
+                          {data.currentStatus} <br />
+                          <span className="text-blue-600 font-mono">{data.orderId}</span>
+                        </div>
+                      </Popup>
+                    </Marker>
+                  </MapContainer>
+                </div>
+              </CardContent>
+            </Card>
           </div>
 
           {/* Sidebar Info */}
@@ -232,9 +247,8 @@ export function OrderDetails() {
               </CardContent>
             </Card>
 
-
             <Card className="border-slate-200 shadow-md bg-white overflow-hidden">
-               <div className="h-1 bg-slate-900" />
+              <div className="h-1 bg-slate-900" />
               <CardHeader>
                 <CardTitle className="text-base">Shipping Fees</CardTitle>
               </CardHeader>
