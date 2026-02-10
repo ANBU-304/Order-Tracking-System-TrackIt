@@ -105,8 +105,7 @@ export function NotificationFeed() {
             <div className="w-px h-4 bg-slate-200 self-center"></div>
             <button 
               onClick={() => setIsOpen(false)}
-              className="flex-1 py-2 text-[9px] text-center text-slate-900 hover:text-yellow-600 uppercase font-black tracking-widest transition-colors"
-            >
+              className="flex-1 py-2 text-[9px] text-center text-slate-900 hover:text-yellow-600 uppercase font-black tracking-widest transition-colors">
               Clear Logs
             </button>
           </div>

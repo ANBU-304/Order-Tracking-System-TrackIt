@@ -96,59 +96,7 @@ export function Navigation() {
         </div>
       </div>
 
-      {/* 4. Mobile Drawer Overlay */}
-      {isMobileMenuOpen && (
-        <div className="fixed inset-0 top-20 bg-white z-[90] md:hidden animate-in slide-in-from-top duration-300">
-          <div className="p-6 space-y-4">
-            {/* User section in mobile menu */}
-            {isAuthenticated && (
-              <div className="flex items-center gap-4 p-4 bg-slate-50 rounded-2xl mb-6">
-                <div className="w-12 h-12 bg-slate-900 rounded-xl flex items-center justify-center text-yellow-400 font-bold">
-                  {user.name.charAt(0)}
-                </div>
-                <div>
-                  <p className="font-bold text-slate-900">{user.name}</p>
-                  <p className="text-xs text-slate-500 uppercase tracking-widest">{user.role}</p>
-                </div>
-              </div>
-            )}
-
-            {/* Nav links in mobile menu */}
-            <div className="space-y-2">
-              {navLinks.filter(link => link.show).map((link) => (
-                <Link 
-                  key={link.path} 
-                  to={link.path} 
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className={`block px-4 py-4 rounded-xl font-bold text-lg transition-colors ${
-                    isActive(link.path) ? 'bg-yellow-400 text-slate-900' : 'text-slate-600 active:bg-slate-100'
-                  }`}
-                >
-                  {link.label}
-                </Link>
-              ))}
-            </div>
-
-            <div className="pt-6 border-t border-slate-100">
-              {!isAuthenticated ? (
-                <Link to="/login" onClick={() => setIsMobileMenuOpen(false)}>
-                  <Button className="w-full bg-slate-900 text-yellow-400 h-14 rounded-2xl font-black uppercase tracking-widest">
-                    Sign In to Account
-                  </Button>
-                </Link>
-              ) : (
-                <Button 
-                  onClick={handleLogout}
-                  variant="outline" 
-                  className="w-full border-red-100 text-red-600 h-14 rounded-2xl font-black uppercase tracking-widest hover:bg-red-50"
-                >
-                  <LogOut className="w-5 h-5 mr-2" /> Terminate Session
-                </Button>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
+     
     </nav>
   );
 }
