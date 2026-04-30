@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { Package, TrendingUp, Scale } from "lucide-react";
+import { useState, useEffect, useCallback } from "react";
+import { TrendingUp, Scale } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -9,6 +9,7 @@ import {
 } from "./ui/Card";
 import { Input } from "./ui/Input";
 import { Label } from "./ui/Label";
+import PropTypes from "prop-types";
 
 export function ShippingCalculator({
   onShippingCostChange,
@@ -16,23 +17,37 @@ export function ShippingCalculator({
 }) {
   const [weight, setWeight] = useState(initialWeight);
 
-  const calculateShipping = (weightInKg) => {
+  // ✅ Memoize the calculation function
+  const calculateShipping = useCallback((weightInKg) => {
     if (weightInKg <= 0) return 0;
     if (weightInKg <= 1) return 50;
     if (weightInKg <= 3) return 90;
     if (weightInKg <= 5) return 150;
     if (weightInKg <= 10) return 250;
     return 250 + Math.ceil((weightInKg - 10) / 5) * 100;
-  };
+  }, []);
 
   const shippingCost = calculateShipping(weight);
 
-  
+  // ✅ Memoize the callback to prevent unnecessary re-renders
+  const memoizedOnShippingCostChange = useCallback(
+    (cost) => {
+      if (onShippingCostChange) {
+        onShippingCostChange(cost);
+      }
+    },
+    [onShippingCostChange]
+  );
+
+  // ✅ Fixed useEffect with proper dependencies
   useEffect(() => {
-    if (onShippingCostChange) {
-      onShippingCostChange(shippingCost);
-    }
-  }, [shippingCost, onShippingCostChange]);
+    memoizedOnShippingCostChange(shippingCost);
+  }, [shippingCost, memoizedOnShippingCostChange]);
+
+  // ✅ Update weight when initialWeight changes
+  useEffect(() => {
+    setWeight(initialWeight);
+  }, [initialWeight]);
 
   const getWeightRange = (weightInKg) => {
     if (weightInKg <= 0) return "Enter weight to calculate";
@@ -41,6 +56,21 @@ export function ShippingCalculator({
     if (weightInKg <= 5) return "Heavy (3-5 kg)";
     if (weightInKg <= 10) return "Bulk (5-10 kg)";
     return "Freight (10+ kg custom)";
+  };
+
+  // ✅ Handle weight change with validation
+  const handleWeightChange = (e) => {
+    const value = e.target.value;
+    // Allow empty string for clearing input
+    if (value === "") {
+      setWeight(0);
+      return;
+    }
+    const parsedValue = parseFloat(value);
+    // Validate the number
+    if (!isNaN(parsedValue) && parsedValue >= 0) {
+      setWeight(parsedValue);
+    }
   };
 
   return (
@@ -54,7 +84,9 @@ export function ShippingCalculator({
             <Scale className="w-5 h-5 text-yellow-400" />
           </div>
           <div>
-            <CardTitle className="text-base font-bold text-slate-900">Cost Estimator</CardTitle>
+            <CardTitle className="text-base font-bold text-slate-900">
+              Cost Estimator
+            </CardTitle>
             <CardDescription className="text-[11px] uppercase font-bold text-slate-400 tracking-tight">
               Weight-based logistics pricing
             </CardDescription>
@@ -65,7 +97,10 @@ export function ShippingCalculator({
       <CardContent className="space-y-5">
         <div className="space-y-2">
           <div className="flex justify-between items-center">
-            <Label htmlFor="weight" className="text-xs font-bold text-slate-600">
+            <Label
+              htmlFor="weight"
+              className="text-xs font-bold text-slate-600"
+            >
               Shipment Weight
             </Label>
             <span className="text-[10px] font-mono font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded">
@@ -73,13 +108,13 @@ export function ShippingCalculator({
             </span>
           </div>
           <div className="relative">
-             <Input
+            <Input
               id="weight"
               type="number"
               min="0"
               step="0.1"
-              value={weight || ""}
-              onChange={(e) => setWeight(parseFloat(e.target.value) || 0)}
+              value={weight === 0 ? "" : weight}
+              onChange={handleWeightChange}
               placeholder="0.00"
               className="text-lg font-bold border-slate-200 focus:ring-slate-900 focus:border-slate-900 rounded-xl h-12 pr-12"
             />
@@ -88,18 +123,23 @@ export function ShippingCalculator({
             </div>
           </div>
           <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest pl-1">
-            Category: <span className="text-slate-900">{getWeightRange(weight)}</span>
+            Category:{" "}
+            <span className="text-slate-900">{getWeightRange(weight)}</span>
           </p>
         </div>
 
         <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 relative overflow-hidden group">
           {/* Subtle background icon for design depth */}
           <TrendingUp className="absolute -right-2 -bottom-2 w-16 h-16 text-slate-200/50 -rotate-12 group-hover:text-yellow-400/20 transition-colors" />
-          
+
           <div className="flex items-center justify-between relative z-10">
             <div className="flex flex-col">
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Estimated Total</span>
-              <span className="text-xs text-slate-500 font-medium italic">Incl. fuel surcharge</span>
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                Estimated Total
+              </span>
+              <span className="text-xs text-slate-500 font-medium italic">
+                Incl. fuel surcharge
+              </span>
             </div>
             <div className="flex flex-col items-end">
               <span
@@ -112,7 +152,7 @@ export function ShippingCalculator({
             </div>
           </div>
         </div>
-        
+
         <div className="flex items-center gap-2 px-1">
           <div className="w-1.5 h-1.5 rounded-full bg-yellow-400 animate-pulse" />
           <span className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">
@@ -123,3 +163,14 @@ export function ShippingCalculator({
     </Card>
   );
 }
+
+// ✅ Add PropTypes for type checking
+ShippingCalculator.propTypes = {
+  onShippingCostChange: PropTypes.func,
+  initialWeight: PropTypes.number,
+};
+
+ShippingCalculator.defaultProps = {
+  onShippingCostChange: null,
+  initialWeight: 0,
+};

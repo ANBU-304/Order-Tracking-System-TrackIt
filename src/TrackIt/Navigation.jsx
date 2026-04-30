@@ -3,7 +3,7 @@ import { Package, Menu, LogOut, User, X, Bell } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button } from './ui/Button';
 import { useAuth } from './useAuth';
-import { NotificationFeed } from './NotificationFeed';
+
 
 export function Navigation() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -20,9 +20,9 @@ export function Navigation() {
   };
 
   const navLinks = [
-    { label: "Home", path: "/", show:isAuthenticated && !(user?.role === 'customer') && !(user?.role === 'support' ) && !(user?.role === 'admin') },
+    { label: "Home", path: "", show:!isAuthenticated && !(user?.role === 'customer') && !(user?.role === 'support' ) && !(user?.role === 'admin') },
     { label: "My Orders", path: "/dashboard/customer", show: isAuthenticated && (user?.role === 'customer') },
-    { label: "Support Portal", path: "/dashboard/support", show: isAuthenticated && (user?.role === 'support' || user?.role === 'admin') },
+    { label: "Support Portal", path: "/dashboard/support", show: isAuthenticated && (user?.role === 'support') },
     { label: "Analytics", path: "/dashboard/admin", show: isAuthenticated && user?.role === 'admin' },
     { label: "Help Center", path: "/help", show:isAuthenticated &&!(user?.role === 'support' ) && !(user?.role === 'admin') },
   ];
@@ -57,8 +57,7 @@ export function Navigation() {
           {/* 3. Right Side Action Area */}
           <div className="flex items-center gap-2 sm:gap-3 z-10">
             
-            {/* Notification Bell (Visible on all screens) */}
-            {isAuthenticated && <NotificationFeed />}
+          
 
             {!isAuthenticated ? (
               <Link to="/login" className="hidden sm:block">

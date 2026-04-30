@@ -1,22 +1,13 @@
-import React, { useState } from "react";
+"use client";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-// Map Imports
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-
-import {
-  MapPin,
-  Package,
-  Truck,
-  CheckCircle2,
-  AlertCircle,
-  Flag,
-  CreditCard,
-  ChevronLeft,
-  FileText, 
-  Clock,   
-  User 
+import { 
+  MapPin, Package, Truck, CreditCard, ChevronLeft, 
+  Clock, Loader2, User, Box, ShieldCheck, Phone,
+  Download, CheckCircle
 } from "lucide-react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/Card";
@@ -24,266 +15,260 @@ import { Badge } from "./ui/Badge";
 import { Button } from "./ui/Button";
 import { Progress } from "./ui/Progress";
 import { Separator } from "./ui/Separator";
-
-import { InvoicePreview } from "./InvoicePreview";
-import { generateSampleInvoice } from "./invoiceUtils";
 import { PaymentModal } from "./PaymentModal";
+import { InvoicePreview } from "./InvoicePreview";
 import { toast } from "sonner";
 
-// Fix for default Leaflet marker icons in React
+import trackingService from "../services/trackingService";
+import orderService from "../services/orderService";
+import paymentService from "../services/paymentService";
+
 const customIcon = new L.Icon({
   iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
-  iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
-  shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
   iconSize: [25, 41],
   iconAnchor: [12, 41],
 });
 
-/* ---------------- MOCK DATA ---------------- */
-const mockTrackingData = {
-  orderId: "TRK123456789",
-  carrier: "FedEx Express",
-  currentStatus: "Out for Delivery",
-  estimatedDelivery: "Today by 8:00 PM",
-  progress: 75,
-  recipientName: "John Smith",
-  coordinates: [11.034344410607908, 76.95390041991644], // San Francisco coordinates
-  shippingAddress: "123 Main Street, San Francisco, CA 94102",
-  trackingEvents: [
-    { id: "1", status: "Out for Delivery", location: "San Francisco, CA", timestamp: "2026-01-03 08:30 AM", description: "Package is on the delivery vehicle" },
-    { id: "2", status: "Arrived at Facility", location: "SF Distribution Center", timestamp: "2026-01-03 06:15 AM", description: "Package arrived at local facility" },
-    { id: "3", status: "In Transit", location: "Oakland, CA", timestamp: "2026-01-02 11:45 PM", description: "Package in transit to destination" },
-    { id: "4", status: "Departed Facility", location: "Los Angeles, CA", timestamp: "2026-01-02 03:20 PM", description: "Package departed from sorting facility" },
-    { id: "5", status: "Picked Up", location: "Los Angeles, CA", timestamp: "2026-01-01 02:00 PM", description: "Package picked up by carrier" },
-    { id: "6", status: "Order Placed", location: "Online", timestamp: "2026-01-01 10:30 AM", description: "Order confirmed and processing" }
-  ]
-};
+const createInvoiceData = (order, payment) => {
+  if (!order && !payment) return null;
+  const amount = payment?.amount || order?.totalAmount || order?.totalPrice || 0;
+  const subtotal = typeof amount === 'number' ? amount : parseFloat(amount) || 0;
+  const tax = subtotal * 0.05;
+  const total = subtotal + tax;
 
-const getStatusIcon = (status) => {
-  if (status.includes("Delivered")) return <CheckCircle2 className="w-5 h-5 text-green-600" />;
-  if (status.includes("Out for Delivery")) return <Truck className="w-5 h-5 text-blue-600" />;
-  if (status.includes("Exception") || status.includes("Delayed")) return <AlertCircle className="w-5 h-5 text-red-600" />;
-  return <Package className="w-5 h-5 text-gray-600" />;
+  return {
+    invoiceNumber: `INV-${(payment?.paymentId || payment?.id || order?.orderId || Date.now()).toString().substring(0, 12)}`,
+    date: payment?.paymentTime 
+      ? new Date(payment.paymentTime).toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' })
+      : new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' }),
+    customerName: (payment?.email || order?.email || "Customer").split('@')[0].toUpperCase(),
+    customerEmail: payment?.email || order?.email || "N/A",
+    customerPhone: payment?.phonenumber || order?.phonenumber || "N/A",
+    address: payment?.orderLocation || order?.location || "N/A",
+    orderId: payment?.orderId || order?.orderId || "N/A",
+    paymentId: payment?.paymentId || payment?.id || "N/A",
+    razorpayOrderId: payment?.razorpayOrderId || "N/A",
+    razorpayPaymentId: payment?.razorpayPaymentId || "N/A",
+    paymentMethod: payment?.paymentMethod || "RAZORPAY",
+    paymentStatus: payment?.paymentStatus || "COMPLETED",
+    items: [{ name: "Shipping Fee", description: "Express delivery", qty: 1, rate: subtotal, amount: subtotal }],
+    subtotal, tax, total,
+    weight: order?.weight || "N/A"
+  };
 };
 
 export function OrderDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const data = mockTrackingData;
-
-  const [isInvoicePreviewOpen, setInvoicePreviewOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [orderData, setOrderData] = useState(null);
   const [isPaymentModalOpen, setPaymentModalOpen] = useState(false);
+  const [showInvoice, setShowInvoice] = useState(false);
+  const [paymentStatus, setPaymentStatus] = useState("CHECKING");
+  const [paymentData, setPaymentData] = useState(null);
+  const [invoiceData, setInvoiceData] = useState(null);
+
+  useEffect(() => {
+    const initPage = async () => {
+      if (!id) return;
+      setLoading(true);
+      try {
+        const order = await orderService.getOrderById(id);
+        setOrderData(order);
+        try {
+          const payment = await paymentService.getPaymentByOrderId(order?.orderId || id);
+          if (payment && payment.paymentStatus?.toUpperCase() === "COMPLETED") {
+            setPaymentStatus("COMPLETED");
+            setPaymentData(payment);
+            setInvoiceData(createInvoiceData(order, payment));
+          } else {
+            setPaymentStatus("PENDING");
+          }
+        } catch (e) {
+          setPaymentStatus("PENDING");
+        }
+      } catch (error) {
+        toast.error("Failed to load details");
+        setPaymentStatus("PENDING");
+      } finally {
+        setLoading(false);
+      }
+    };
+    initPage();
+  }, [id]);
+
+  const handlePaymentSuccess = useCallback((paymentResponse) => {
+    setPaymentStatus("COMPLETED");
+    setPaymentData(paymentResponse);
+    setInvoiceData(createInvoiceData(orderData, paymentResponse));
+    setPaymentModalOpen(false);
+    toast.success("Payment Verified!");
+    setTimeout(() => setShowInvoice(true), 1000);
+  }, [orderData]);
+
+  const displayPrice = useMemo(() => {
+    const price = paymentData?.amount || orderData?.totalAmount || orderData?.totalPrice || 0;
+    return typeof price === "number" ? price : parseFloat(price) || 0;
+  }, [orderData, paymentData]);
+
+  const formatDate = (dateString) => {
+    if (!dateString) return "N/A";
+    return new Date(dateString).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+  };
+
+  if (loading) {
+    return (
+      <div className="h-screen flex flex-col items-center justify-center bg-slate-50">
+        <Loader2 className="w-10 h-10 animate-spin text-slate-900" />
+      </div>
+    );
+  }
+
+  const currentStatus = orderData?.status || "In Transit";
+  const progressValue = currentStatus.toLowerCase() === "delivered" ? 100 : 75;
 
   return (
-    <div className="min-h-screen bg-slate-50 py-8">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        
-        {/* Header Section */}
-        <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div className="min-h-screen bg-slate-50 py-10 px-4">
+      <div className="max-w-6xl mx-auto">
+        <div className="mb-8 flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
           <div>
-            <Button 
-              variant="ghost" 
-              onClick={() => navigate(-1)} 
-              className="mb-2 -ml-2 text-slate-500 hover:text-slate-900"
-            >
-              <ChevronLeft className="w-4 h-4 mr-1" /> Back to Dashboard
+            <Button variant="ghost" onClick={() => navigate(-1)} className="-ml-2 text-slate-500 hover:bg-slate-200">
+              <ChevronLeft className="w-4 h-4 mr-1" /> Back
             </Button>
-            <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Track Shipment</h1>
-            <p className="text-slate-500 font-mono text-sm">ID: {id || data.orderId}</p>
+            <h1 className="text-4xl font-black text-slate-900 tracking-tighter">TRACK SHIPMENT</h1>
+            <p className="font-mono text-sm text-slate-400 uppercase">ORDER: {orderData?.orderId || id}</p>
           </div>
-          
           <div className="flex gap-2">
-            <Button variant="outline" onClick={() => setInvoicePreviewOpen(true)} className="border-slate-200">
-              <FileText className="w-4 h-4 mr-2" /> Invoice
-            </Button>
+            <Badge className="bg-yellow-400 text-slate-900 font-bold px-4 py-1 uppercase border-none">
+              {currentStatus}
+            </Badge>
+            {paymentStatus === "COMPLETED" && (
+              <Badge className="bg-slate-900 text-yellow-400 font-bold px-4 py-1 uppercase">
+                <CheckCircle className="w-3 h-3 mr-1" /> PAID
+              </Badge>
+            )}
           </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          
-          {/* Main Tracking Info */}
-          <div className="lg:col-span-2 space-y-8">
-            <Card className="border-slate-200 shadow-sm overflow-hidden">
-              <div className="h-1.5 bg-yellow-400 w-full" />
-              <CardHeader className="pb-2">
-                <div className="flex justify-between items-center">
-                  <CardTitle className="text-lg">Live Progress</CardTitle>
-                  <Badge className="bg-yellow-400 text-slate-900 border-none font-bold">
-                    {data.currentStatus}
-                  </Badge>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="relative flex justify-between items-center py-4">
-                  {[
-                    { label: "Ordered", icon: CheckCircle2, active: true },
-                    { label: "Shipped", icon: Package, active: true },
-                    { label: "On Way", icon: Truck, active: true, pulse: true },
-                    { label: "Delivered", icon: Flag, active: false }
-                  ].map((step, i, arr) => (
-                    <React.Fragment key={i}>
-                      <div className="flex flex-col items-center z-10">
-                        <div className={`w-10 h-10 rounded-full flex items-center justify-center shadow-sm 
-                          ${step.active ? 'bg-slate-900 text-yellow-400' : 'bg-slate-100 text-slate-400'} 
-                          ${step.pulse ? 'ring-4 ring-yellow-100 animate-pulse' : ''}`}>
-                          <step.icon className="w-5 h-5" />
-                        </div>
-                        <span className={`text-[10px] mt-2 font-bold uppercase tracking-tighter 
-                          ${step.active ? 'text-slate-900' : 'text-slate-400'}`}>
-                          {step.label}
-                        </span>
-                      </div>
-                      {i < arr.length - 1 && (
-                        <div className={`flex-1 h-0.5 mx-[-10px] mb-6 
-                          ${arr[i+1].active ? 'bg-slate-900' : 'bg-slate-200'}`} />
-                      )}
-                    </React.Fragment>
-                  ))}
-                </div>
-
-                <div className="bg-slate-50 p-4 rounded-xl flex items-center justify-between border border-slate-100">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-white rounded-lg shadow-sm">
-                      <Clock className="w-5 h-5 text-slate-600" />
+          <div className="lg:col-span-2 space-y-6">
+            <Card className="border-0 shadow-sm bg-white rounded-2xl overflow-hidden">
+              <div className="h-1.5 bg-slate-900 w-full" />
+              <CardContent className="p-8">
+                <div className="flex justify-between items-center mb-10">
+                  <div className="flex items-center gap-4">
+                    <div className="p-3 bg-slate-100 rounded-2xl">
+                      <Clock className="w-6 h-6 text-slate-900" />
                     </div>
                     <div>
-                      <p className="text-xs text-slate-500 font-bold uppercase tracking-widest">Estimated Arrival</p>
-                      <p className="font-bold text-slate-900">{data.estimatedDelivery}</p>
+                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Est. Delivery</p>
+                      <p className="text-xl font-black text-slate-900">
+                        {formatDate(paymentData?.estimatedDelivery || orderData?.estimatedDeliveryDate)}
+                      </p>
                     </div>
                   </div>
-                  <Progress value={data.progress} className="w-24 h-2 bg-slate-200" />
+                  <div className="text-right">
+                    <span className="text-[10px] font-bold text-slate-400 uppercase">{progressValue}% Complete</span>
+                    <Progress value={progressValue} className="w-32 h-3 bg-slate-100 mt-1" />
+                  </div>
                 </div>
-              </CardContent>
-            </Card>
 
-            
-            
-            <Card className="border-slate-200 shadow-sm">
-              <CardHeader>
-                <CardTitle className="text-lg">Shipment Journey</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-0">
-                  {data.trackingEvents.map((event, index) => (
-                    <div key={event.id} className="flex gap-4 group">
-                      <div className="flex flex-col items-center">
-                        <div className={`w-8 h-8 rounded-full flex items-center justify-center 
-                          ${index === 0 ? 'bg-slate-900 text-yellow-400' : 'bg-slate-100 text-slate-400'}`}>
-                          {getStatusIcon(event.status)}
-                        </div>
-                        {index < data.trackingEvents.length - 1 && (
-                          <div className="w-px h-16 bg-slate-200" />
-                        )}
+                <div className="grid grid-cols-4 gap-2 relative">
+                  <div className="absolute top-5 left-0 w-full h-0.5 bg-slate-100 -z-0" />
+                  {['Ordered', 'Shipped', 'Transit', 'Arrived'].map((step, idx) => (
+                    <div key={step} className="flex flex-col items-center gap-3 z-10">
+                      <div className={`w-10 h-10 rounded-full flex items-center justify-center border-4 border-white shadow-sm 
+                        ${progressValue >= (idx + 1) * 25 ? 'bg-slate-900 text-yellow-400' : 'bg-slate-100 text-slate-300'}`}>
+                        {idx === 0 ? <Box className="w-4 h-4" /> : <Truck className="w-4 h-4" />}
                       </div>
-                      <div className="flex-1 pb-8">
-                        <div className="flex justify-between items-start mb-1">
-                          <h4 className="font-bold text-sm text-slate-900">{event.status}</h4>
-                          <span className="text-[11px] font-bold text-slate-400">{event.timestamp}</span>
-                        </div>
-                        <p className="text-sm text-slate-500 mb-2">{event.description}</p>
-                        <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-400">
-                          <MapPin className="w-3 h-3" />
-                          {event.location}
-                        </div>
-                      </div>
+                      <span className="text-[10px] font-black uppercase text-slate-500">{step}</span>
                     </div>
                   ))}
                 </div>
               </CardContent>
             </Card>
-            {/* Live Map Card */}
-            <Card className="border-slate-200 shadow-sm overflow-hidden">
-              <CardHeader>
-                <CardTitle>Package Location</CardTitle>
-              </CardHeader>
-              <CardContent className="p-0">
-                <div className="w-full h-80 z-0">
-                  <MapContainer 
-                    center={data.coordinates} 
-                    zoom={12} 
-                    scrollWheelZoom={false}
-                    className="h-full w-full"
-                  >
-                    <TileLayer
-                      attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                      url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                    />
-                    <Marker position={data.coordinates} icon={customIcon}>
-                      <Popup>
-                        <div className="text-xs font-bold uppercase tracking-tight">
-                          {data.currentStatus} <br />
-                          <span className="text-blue-600 font-mono">{data.orderId}</span>
-                        </div>
-                      </Popup>
-                    </Marker>
-                  </MapContainer>
-                </div>
-              </CardContent>
+
+            <Card className="border-0 shadow-lg h-[400px] overflow-hidden rounded-3xl">
+              <MapContainer center={[orderData?.latitude || 11.0168, orderData?.longitude || 76.9558]} zoom={13} className="h-full w-full z-0">
+                <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                <Marker position={[orderData?.latitude || 11.0168, orderData?.longitude || 76.9558]} icon={customIcon}>
+                  <Popup>📍 {orderData?.location}</Popup>
+                </Marker>
+              </MapContainer>
             </Card>
           </div>
 
-          {/* Sidebar Info */}
           <div className="space-y-6">
-            <Card className="border-slate-200 shadow-sm">
-              <CardHeader className="pb-4">
-                <CardTitle className="text-base">Delivery Info</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-start gap-3">
-                  <User className="w-4 h-4 text-slate-400 mt-0.5" />
-                  <div>
-                    <p className="text-[10px] uppercase font-bold text-slate-400 tracking-widest">Recipient</p>
-                    <p className="text-sm font-bold text-slate-900">{data.recipientName}</p>
+            <Card className="border-0 shadow-sm bg-slate-900 text-white rounded-2xl">
+              <CardContent className="pt-6">
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="w-12 h-12 rounded-full bg-slate-800 flex items-center justify-center border border-slate-700">
+                    <User className="text-yellow-400" />
+                  </div>
+                  <div className="overflow-hidden">
+                    <h3 className="font-bold truncate uppercase">{paymentData?.email?.split('@')[0] || "Customer"}</h3>
+                    <p className="text-xs text-slate-400">Verified Consignee</p>
                   </div>
                 </div>
-                <Separator />
-                <div className="flex items-start gap-3">
-                  <MapPin className="w-4 h-4 text-slate-400 mt-0.5" />
-                  <div>
-                    <p className="text-[10px] uppercase font-bold text-slate-400 tracking-widest">Address</p>
-                    <p className="text-sm text-slate-600">{data.shippingAddress}</p>
+                <div className="space-y-4 text-sm">
+                  <div className="flex gap-3">
+                    <Phone className="w-4 h-4 text-slate-500 shrink-0" />
+                    <p className="text-slate-300">{paymentData?.phonenumber || orderData?.phonenumber || "N/A"}</p>
+                  </div>
+                  <div className="flex gap-3">
+                    <MapPin className="w-4 h-4 text-slate-500 shrink-0" />
+                    <p className="text-slate-300 leading-snug">{paymentData?.orderLocation || orderData?.location || "N/A"}</p>
+                  </div>
+                  <div className="flex gap-3">
+                    <Package className="w-4 h-4 text-slate-500 shrink-0" />
+                    <p className="text-slate-300">Weight: <span className="text-yellow-400 font-bold">{orderData?.weight || "N/A"} kg</span></p>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="border-slate-200 shadow-md bg-white overflow-hidden">
-              <div className="h-1 bg-slate-900" />
-              <CardHeader>
-                <CardTitle className="text-base">Shipping Fees</CardTitle>
+            <Card className={`border-2 shadow-xl bg-white rounded-2xl overflow-hidden transition-all ${
+              paymentStatus === "COMPLETED" ? 'border-slate-900' : 'border-yellow-400'
+            }`}>
+              <CardHeader className={`py-3 ${paymentStatus === "COMPLETED" ? 'bg-slate-900' : 'bg-yellow-400'}`}>
+                <CardTitle className={`text-sm font-black uppercase text-center flex items-center justify-center gap-2 ${
+                  paymentStatus === "COMPLETED" ? 'text-yellow-400' : 'text-slate-900'
+                }`}>
+                  {paymentStatus === "COMPLETED" ? "Payment Complete" : "Billing Summary"}
+                </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="p-4 bg-slate-50 rounded-xl flex items-center justify-between">
-                   <span className="text-sm font-medium text-slate-600">Total</span>
-                   <span className="text-xl font-black text-slate-900">₹90.00</span>
+              <CardContent className="p-6 space-y-4">
+                <div className="flex justify-between items-baseline">
+                  <span className="text-slate-400 text-xs font-bold uppercase">Amount</span>
+                  <span className="text-3xl font-black text-slate-900">₹{displayPrice.toFixed(2)}</span>
                 </div>
-                <Button 
-                  className="w-full bg-slate-900 text-yellow-400 hover:bg-slate-800 font-bold"
-                  onClick={() => setPaymentModalOpen(true)}
-                >
-                  <CreditCard className="w-4 h-4 mr-2" /> Pay Now
-                </Button>
+
+                <Separator />
+
+                {paymentStatus === "COMPLETED" ? (
+                  <Button onClick={() => setShowInvoice(true)} className="w-full h-14 bg-slate-900 hover:bg-slate-800 text-yellow-400 font-black rounded-xl shadow-lg">
+                    <Download className="w-5 h-5 mr-2" /> DOWNLOAD INVOICE
+                  </Button>
+                ) : (
+                  <Button onClick={() => setPaymentModalOpen(true)} className="w-full h-14 bg-slate-900 hover:bg-slate-800 text-yellow-400 font-black rounded-xl shadow-lg">
+                    <CreditCard className="w-5 h-5 mr-2" /> PAY SECURELY
+                  </Button>
+                )}
+
+                <div className="flex items-center justify-center gap-2 text-[10px] text-slate-400 font-bold uppercase">
+                  <ShieldCheck className="w-3 h-3 text-slate-900" /> Secure Encryption
+                </div>
               </CardContent>
             </Card>
           </div>
         </div>
       </div>
 
-      {/* Modals */}
-      {isInvoicePreviewOpen && (
-        <InvoicePreview
-          invoiceData={generateSampleInvoice(id || data.orderId)}
-          onClose={() => setInvoicePreviewOpen(false)}
-        />
-      )}
-
       {isPaymentModalOpen && (
-        <PaymentModal
-          amount={90.00}
-          orderId={id || data.orderId}
-          onClose={() => setPaymentModalOpen(false)}
-          onSuccess={() => toast.success("Payment Successful!")}
-        />
+        <PaymentModal amount={displayPrice} orderId={orderData?.orderId || id} onClose={() => setPaymentModalOpen(false)} onSuccess={handlePaymentSuccess} />
+      )}
+      {showInvoice && invoiceData && (
+        <InvoicePreview invoiceData={invoiceData} onClose={() => setShowInvoice(false)} />
       )}
     </div>
   );
