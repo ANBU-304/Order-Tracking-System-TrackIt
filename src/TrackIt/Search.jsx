@@ -25,7 +25,6 @@ Search.Input = function SearchInput(props) {
   return (
     <input
       type="text"
-      
       value={query}
       placeholder="Search..."
       onChange={(e) => setQuery(e.target.value)}
