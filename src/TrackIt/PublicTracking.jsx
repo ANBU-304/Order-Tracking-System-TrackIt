@@ -1,9 +1,11 @@
 import { useState } from 'react';
-import { Search, Package, Award, Truck, MapPin, CheckCircle2, Phone, Mail, Facebook, Twitter, Instagram, Linkedin, Star } from 'lucide-react';
+import { Search, Award, Phone, Mail, Facebook, Twitter, Instagram, Linkedin, Star, CheckCircle2, Loader2 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/Card';
 import { Input } from './ui/Input';
 import { Button } from './ui/Button';
 import { useNavigate } from 'react-router-dom';
+import trackingService from '../services/trackingService';
+import { toast } from 'sonner';
 
 export function PublicTracking() {
   const [trackingNumber, setTrackingNumber] = useState('');
@@ -12,7 +14,6 @@ export function PublicTracking() {
   const [isSearching, setIsSearching] = useState(false);
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
-
 
   const testimonials = [
     {
@@ -38,13 +39,55 @@ export function PublicTracking() {
     },
   ];
 
-  const handleTrack = () => {
-    if (trackingNumber.trim()) {
-      setIsSearching(true);
-      setTimeout(() => {
-        setIsSearching(false);
-        navigate(`/order/${trackingNumber}`);
-      }, 500);
+  // ✅ Updated handleTrack with backend integration
+  const handleTrack = async () => {
+    if (!trackingNumber.trim()) {
+      toast.error("Please enter a tracking number or email");
+      return;
+    }
+
+    setIsSearching(true);
+
+    try {
+      let result;
+
+      if (trackMethod === 'orderid') {
+        // Search by Order ID
+        result = await trackingService.getEventsByOrderId(trackingNumber);
+      } else {
+        // Search by Email (treat trackingNumber as email)
+        if (!trackingNumber.includes('@')) {
+          toast.error("Please enter a valid email address");
+          setIsSearching(false);
+          return;
+        }
+        result = await trackingService.getEventsByEmail(trackingNumber);
+      }
+
+      // Check if results exist
+      if (result && result.content && result.content.length > 0) {
+        toast.success("Tracking information found!");
+        
+        // Navigate to tracking details page with the orderId
+        const orderId = trackMethod === 'orderid' 
+          ? trackingNumber 
+          : result.content[0].orderId;
+        
+        navigate(`/order/${orderId}`);
+      } else {
+        toast.error("No tracking information found for this " + 
+          (trackMethod === 'orderid' ? "Order ID" : "Email"));
+      }
+    } catch (error) {
+      console.error("Tracking error:", error);
+      
+      if (error.response?.status === 404) {
+        toast.error("Order not found. Please check your tracking number.");
+      } else {
+        toast.error("Failed to fetch tracking information. Please try again.");
+      }
+    } finally {
+      setIsSearching(false);
     }
   };
 
@@ -56,14 +99,16 @@ export function PublicTracking() {
 
   const handleSubscribe = () => {
     if (email.includes('@')) {
+      toast.success("Thank you for subscribing! We'll keep you updated.");
       setEmail('');
+    } else {
+      toast.error("Please enter a valid email address");
     }
   };
 
   return (
     <div className="flex flex-col min-h-screen font-sans bg-white">
       {/* HERO SECTION */}
-      
       <main className="grow">
         <div className="bg-gradient-to-br from-yellow-100 via-white to-amber-50">
           <div className="max-w-7xl mx-auto px-4 py-16 md:py-24 flex flex-col md:flex-row items-center justify-between gap-12">
@@ -75,7 +120,7 @@ export function PublicTracking() {
                 <span className="bg-gradient-to-r from-yellow-500 to-amber-600 bg-clip-text text-transparent">orders easily</span>
               </h1>
               <p className="text-lg text-slate-600 max-w-lg border-l-4 border-yellow-400 pl-4">
-                Just enter your Mobile Number or Order ID & it's done.
+                Just enter your Email or Order ID & it's done.
               </p>
               
               {/* Illustration Placeholder */}
@@ -84,7 +129,7 @@ export function PublicTracking() {
                   <div className="w-16 h-12 bg-yellow-200 rounded-md shadow-sm"></div>
                   <div className="w-24 h-16 bg-yellow-400 rounded-md shadow-md"></div>
                   <div className="relative">
-                    <MapPin className="w-16 h-16 text-slate-800 mb-2" />
+                    <CheckCircle2 className="w-16 h-16 text-slate-800 mb-2" />
                     <div className="w-32 h-6 bg-yellow-400/30 rounded-full blur-sm"></div>
                   </div>
                 </div>
@@ -98,7 +143,7 @@ export function PublicTracking() {
                   <div className="flex items-center justify-between mb-8">
                     <span className="font-bold text-slate-800">Track By:</span>
                     <div className="flex gap-4">
-                      {['orderid', 'mobilenumber'].map((type) => (
+                      {['orderid', 'email'].map((type) => (
                         <label key={type} className="flex items-center gap-2 cursor-pointer text-sm font-medium text-gray-600">
                           <input 
                             type="radio" 
@@ -107,7 +152,7 @@ export function PublicTracking() {
                             onChange={() => setTrackMethod(type)}
                             className="w-4 h-4 accent-yellow-500"
                           />
-                          {type === 'orderid' ? 'Order ID' : 'Mobile Number'}
+                          {type === 'orderid' ? 'Order ID' : 'Email'}
                         </label>
                       ))}
                     </div>
@@ -115,20 +160,23 @@ export function PublicTracking() {
 
                   <div className="space-y-4">
                     <Input 
-                      placeholder={trackMethod === 'mobilenumber' ? "Enter Mobile Number" : "Enter Order ID"} 
+                      placeholder={trackMethod === 'email' ? "Enter Email Address" : "Enter Order ID"} 
                       className="bg-gray-50 border-gray-100 h-14 rounded-xl focus:ring-yellow-500 focus:border-yellow-500"
                       value={trackingNumber}
                       onChange={(e) => setTrackingNumber(e.target.value)}
                       onKeyPress={handleKeyPress}
+                      type={trackMethod === 'email' ? 'email' : 'text'}
                     />
+                    
                     {trackMethod === 'orderid' && (
                       <Input 
-                        placeholder="Phone No." 
+                        placeholder="Phone No. (Optional)" 
                         className="bg-gray-50 border-gray-100 h-14 rounded-xl focus:ring-yellow-500 focus:border-yellow-500"
                         value={phoneNumber}
                         onChange={(e) => setPhoneNumber(e.target.value)}
                       />
                     )}
+                    
                     <Button 
                       onClick={handleTrack}
                       disabled={isSearching}
@@ -136,10 +184,15 @@ export function PublicTracking() {
                     >
                       {isSearching ? (
                         <div className="flex items-center justify-center">
-                          <div className="w-5 h-5 border-2 border-slate-900 border-t-transparent rounded-full animate-spin mr-2"></div>
-                          Tracking...
+                          <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                          Searching...
                         </div>
-                      ) : 'Track Now'}
+                      ) : (
+                        <>
+                          <Search className="w-5 h-5 mr-2" />
+                          Track Now
+                        </>
+                      )}
                     </Button>
                   </div>
                 </CardContent>
@@ -158,7 +211,6 @@ export function PublicTracking() {
               {/* Real-Time Tracking Card */}
               <Card className="hover:shadow-2xl transition-all duration-300 border-0 cursor-pointer group overflow-hidden hover:-translate-y-1 relative h-full ring-1 ring-gray-100">
                 <div className="absolute top-0 left-0 right-0 h-1 bg-yellow-400 z-20"></div>
-                {/* Image Header */}
                 <div className="h-48 overflow-hidden relative">
                   <img 
                     src="https://images.pexels.com/photos/9594428/pexels-photo-9594428.jpeg" 
@@ -166,7 +218,6 @@ export function PublicTracking() {
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 grayscale-[0.3] group-hover:grayscale-0"
                   />
                   <div className="absolute inset-0 bg-yellow-900/10 group-hover:bg-transparent transition-colors"></div>
-                  
                 </div>
                 
                 <CardHeader className="pb-6 relative z-10 bg-white">
@@ -180,7 +231,6 @@ export function PublicTracking() {
               {/* Multiple Carriers Card */}
               <Card className="hover:shadow-2xl transition-all duration-300 border-0 cursor-pointer group overflow-hidden hover:-translate-y-1 relative h-full ring-1 ring-gray-100">
                 <div className="absolute top-0 left-0 right-0 h-1 bg-amber-500 z-20"></div>
-                {/* Image Header */}
                 <div className="h-48 overflow-hidden relative">
                   <img 
                     src="https://images.pexels.com/photos/9754798/pexels-photo-9754798.jpeg" 
@@ -188,7 +238,6 @@ export function PublicTracking() {
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 grayscale-[0.3] group-hover:grayscale-0"
                   />
                   <div className="absolute inset-0 bg-amber-900/10 group-hover:bg-transparent transition-colors"></div>
-                 
                 </div>
 
                 <CardHeader className="pb-6 relative z-10 bg-white">
@@ -202,7 +251,6 @@ export function PublicTracking() {
               {/* Location History Card */}
               <Card className="hover:shadow-2xl transition-all duration-300 border-0 cursor-pointer group overflow-hidden hover:-translate-y-1 relative h-full ring-1 ring-gray-100">
                 <div className="absolute top-0 left-0 right-0 h-1 bg-slate-900 z-20"></div>
-                {/* Image Header */}
                 <div className="h-48 overflow-hidden relative">
                   <img 
                     src="https://images.pexels.com/photos/5137965/pexels-photo-5137965.jpeg" 
@@ -210,7 +258,6 @@ export function PublicTracking() {
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 grayscale-[0.3] group-hover:grayscale-0"
                   />
                   <div className="absolute inset-0 bg-slate-900/10 group-hover:bg-transparent transition-colors"></div>
-                  
                 </div>
 
                 <CardHeader className="pb-6 relative z-10 bg-white">
@@ -240,7 +287,7 @@ export function PublicTracking() {
                   </div>
                   <h4 className="text-xl font-semibold mb-2 text-gray-800">Enter Tracking Number</h4>
                   <p className="text-gray-600">
-                    Enter your unique order ID or tracking number in the search box above
+                    Enter your unique order ID or email address in the search box above
                   </p>
                 </div>
 
@@ -274,7 +321,7 @@ export function PublicTracking() {
 
                 <div className="text-center group">
                   <div className="relative mx-auto mb-4">
-                    <div className="w-20 h-20  bg-yellow-50  rounded-2xl flex items-center justify-center group-hover:bg-yellow-100 transition-colors shadow-sm">
+                    <div className="w-20 h-20 bg-yellow-50 rounded-2xl flex items-center justify-center group-hover:bg-yellow-100 transition-colors shadow-sm">
                       <div className="w-14 h-14 bg-yellow-50 rounded-xl flex items-center justify-center text-yellow-400 shadow-md">
                         <CheckCircle2 className="w-8 h-8" />
                       </div>
@@ -366,6 +413,7 @@ export function PublicTracking() {
                   className="bg-white/5 border-white/10 text-white placeholder:text-slate-500 h-14 rounded-xl focus:ring-yellow-400"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  onKeyPress={(e) => e.key === 'Enter' && handleSubscribe()}
                 />
                 <Button
                   onClick={handleSubscribe}
@@ -414,10 +462,9 @@ export function PublicTracking() {
             <div>
               <h4 className="text-sm font-bold uppercase tracking-widest text-yellow-400 mb-6">Quick Links</h4>
               <ul className="space-y-4">
-                <li><a href="#" className="text-slate-400 hover:text-white transition-colors">Home</a></li>
-                <li><a href="#" className="text-slate-400 hover:text-white transition-colors">Track Package</a></li>
-                <li><a href="#" className="text-slate-400 hover:text-white transition-colors">Carriers</a></li>
-                <li><a href="#" className="text-slate-400 hover:text-white transition-colors">Pricing</a></li>
+                <li><a href="/" className="text-slate-400 hover:text-white transition-colors">Home</a></li>
+                <li><a href="/" className="text-slate-400 hover:text-white transition-colors">Track Package</a></li>
+                <li><a href="/login" className="text-slate-400 hover:text-white transition-colors">Login</a></li>
                 <li><a href="#" className="text-slate-400 hover:text-white transition-colors">About Us</a></li>
               </ul>
             </div>
@@ -429,7 +476,6 @@ export function PublicTracking() {
                 <li><a href="/help" className="text-slate-400 hover:text-white transition-colors">Help Center</a></li>
                 <li><a href="/help" className="text-slate-400 hover:text-white transition-colors">FAQ</a></li>
                 <li><a href="#" className="text-slate-400 hover:text-white transition-colors">Contact Us</a></li>
-                <li><a href="#" className="text-slate-400 hover:text-white transition-colors">Shipping Info</a></li>
                 <li><a href="#" className="text-slate-400 hover:text-white transition-colors">Privacy Policy</a></li>
               </ul>
             </div>

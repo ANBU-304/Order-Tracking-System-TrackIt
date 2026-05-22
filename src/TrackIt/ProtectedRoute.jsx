@@ -1,21 +1,19 @@
 import { Navigate } from "react-router-dom";
 import { useAuth } from "./useAuth";
 
-function ProtectedRoute({ children, allowedRoles = null }) {
-  const { isAuthenticated, user } = useAuth();
-  
-  // Redirect to login if not authenticated
+export default function ProtectedRoute({ children, allowedRoles }) {
+  const { user, isAuthenticated } = useAuth();
+
+  // ✅ Not logged in → redirect to login
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
-  
-  // Check role permissions if allowedRoles is specified
-  if (allowedRoles && !allowedRoles.includes(user?.role)) {
-    return <Navigate to="/dashboard" replace />;
+
+  // ✅ Logged in but wrong role → redirect to their own dashboard
+  if (allowedRoles && !allowedRoles.includes(user.role?.toLowerCase())) {
+    const correctPath = `/${user.role.toLowerCase()}/dashboard`;
+    return <Navigate to={correctPath} replace />;
   }
-  
-  // Render children if authenticated and authorized
+
   return children;
 }
-
-export default ProtectedRoute;

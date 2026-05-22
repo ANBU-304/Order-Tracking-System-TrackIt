@@ -1,305 +1,290 @@
-import { useState } from "react";
-import {
-  X,
-  CreditCard,
-  Smartphone,
-  Building,
-  CheckCircle2,
-  Shield,
-} from "lucide-react";
-
+"use client";
+import React, { useState, useEffect, useRef } from "react";
+import { X, CreditCard, CheckCircle2, Shield, Loader2, Lock } from "lucide-react";
 import { Card, CardContent } from "./ui/Card";
 import { Button } from "./ui/Button";
-import { Input } from "./ui/Input";
-import { Label } from "./ui/Label";
-import { Separator } from "./ui/Separator";
-import { useAuth } from "./useAuth"; 
+import { useAuth } from "./useAuth";
+import paymentService from "../services/paymentService";
+import { toast } from "sonner";
+
+const RAZORPAY_SCRIPT_URL = "https://checkout.razorpay.com/v1/checkout.js";
 
 export function PaymentModal({ amount, orderId, onClose, onSuccess }) {
-  const [selectedMethod, setSelectedMethod] = useState("upi");
+  const { isAuthenticated } = useAuth();
   const [isProcessing, setIsProcessing] = useState(false);
-  const [showSuccess, setShowSuccess] = useState(false);
+  const [paymentSuccess, setPaymentSuccess] = useState(false);
+  const [error, setError] = useState(null);
+  const isMountedRef = useRef(true);
 
-  const [upiId, setUpiId] = useState("");
-  const [cardNumber, setCardNumber] = useState("");
-  const [cardExpiry, setCardExpiry] = useState("");
-  const [cardCvv, setCardCvv] = useState("");
-  const [cardName, setCardName] = useState("");
-  const [selectedBank, setSelectedBank] = useState("");
+  // Ensure amount is a valid number
+  const safeAmount = typeof amount === "number" ? amount : parseFloat(amount || 0);
 
-  const paymentMethods = [
-    {
-      id: "upi",
-      name: "UPI",
-      icon: Smartphone,
-      description: "Pay using UPI apps",
-      color: "from-green-500 to-emerald-500",
-    },
-    {
-      id: "card",
-      name: "Card",
-      icon: CreditCard,
-      description: "Debit/Credit Card",
-      color: "from-blue-500 to-indigo-500",
-    },
-    {
-      id: "netbanking",
-      name: "Net Banking",
-      icon: Building,
-      description: "Pay via bank",
-      color: "from-purple-500 to-pink-500",
-    },
-  ];
+  // Load Razorpay Script
+  useEffect(() => {
+    isMountedRef.current = true;
+    
+    const loadScript = async () => {
+      if (window.Razorpay) return;
+      
+      const script = document.createElement("script");
+      script.src = RAZORPAY_SCRIPT_URL;
+      script.async = true;
+      script.onerror = () => { 
+        if (isMountedRef.current) {
+          setError("Gateway Load Failed");
+          toast.error("Failed to load payment gateway");
+        }
+      };
+      document.body.appendChild(script);
+    };
+    
+    loadScript();
+    
+    return () => { 
+      isMountedRef.current = false; 
+    };
+  }, []);
 
-  const popularBanks = [
-    "State Bank of India",
-    "HDFC Bank",
-    "ICICI Bank",
-    "Axis Bank",
-    "Kotak Mahindra Bank",
-    "Punjab National Bank",
-  ];
-  
-  // Check authentication
-  const { isAuthenticated } = useAuth(); // Assuming isAuth is a hook that returns auth status
-
+  // Handle Payment
   const handlePayment = async () => {
-    setIsProcessing(true);
-    await new Promise((r) => setTimeout(r, 1000));
-    setIsProcessing(false);
-    setShowSuccess(true);
+    if (!isAuthenticated) {
+      return toast.error("Please login to continue");
+    }
+    
+    if (!safeAmount || safeAmount <= 0) {
+      return toast.error("Invalid payment amount detected.");
+    }
 
-    setTimeout(() => {
-      onSuccess();
-      onClose();
-    }, 2000);
+    setIsProcessing(true);
+    setError(null);
+
+    try {
+      // 1. Create payment order on backend
+      console.log("💳 Creating payment order:", { orderId, amount: safeAmount });
+      
+      const orderResponse = await paymentService.createPaymentOrder({ 
+        orderId, 
+        amount: safeAmount 
+      });
+      
+      console.log("✅ Order created:", orderResponse);
+      
+      // 2. Open Razorpay checkout
+      const options = {
+        key: orderResponse.razorpayKeyId,
+        amount: orderResponse.amount,
+        currency: orderResponse.currency || "INR",
+        name: "TrackIt Logistics",
+        description: `Shipment Fee for Order: ${orderId}`,
+        order_id: orderResponse.razorpayOrderId,
+        handler: async (response) => {
+          console.log("💰 Razorpay payment response:", response);
+          
+          try {
+            // 3. Verify payment on backend
+            const verifyPayload = {
+              razorpayOrderId: response.razorpay_order_id,
+              razorpayPaymentId: response.razorpay_payment_id,
+              razorpaySignature: response.razorpay_signature,
+            };
+            
+            console.log("🔍 Verifying payment:", verifyPayload);
+            
+            const verifyResponse = await paymentService.verifyPayment(verifyPayload);
+            
+            console.log("✅ Verification response:", verifyResponse);
+
+            if (isMountedRef.current) {
+              // Backend returns Payment entity after verification
+              if (verifyResponse && verifyResponse.paymentStatus === "COMPLETED") {
+                setPaymentSuccess(true);
+                toast.success("Payment Verified Successfully! 🎉");
+                
+                setTimeout(() => {
+                  if (onSuccess) onSuccess(verifyResponse);
+                  onClose();
+                }, 1500);
+              } else {
+                throw new Error("Payment verification failed");
+              }
+            }
+          } catch (verifyErr) {
+            console.error("❌ Verification error:", verifyErr);
+            
+            if (isMountedRef.current) {
+              setError("Payment verification failed. Please contact support.");
+              toast.error("Verification failed");
+              setIsProcessing(false);
+            }
+          }
+        },
+        prefill: {
+          name: "Customer",
+          email: "customer@trackit.com",
+        },
+        notes: {
+          orderId: orderId,
+        },
+        theme: { 
+          color: "#0f172a" 
+        },
+        modal: { 
+          ondismiss: () => {
+            if (isMountedRef.current) {
+              setIsProcessing(false);
+              toast.info("Payment cancelled");
+            }
+          }
+        }
+      };
+
+      const rzp = new window.Razorpay(options);
+      rzp.open();
+      
+    } catch (err) {
+      console.error("❌ Payment error:", err);
+      
+      // Extract error message
+      const errorMessage = typeof err === 'string' 
+        ? err 
+        : err.response?.data?.message || err.response?.data || err.message || "";
+      
+      console.log("Error details:", {
+        status: err.response?.status,
+        data: err.response?.data,
+        message: errorMessage
+      });
+      
+      // Handle "already completed" case
+      if (err.response?.status === 400 && 
+          (errorMessage.toLowerCase().includes("already completed") || 
+           errorMessage.toLowerCase().includes("already paid"))) {
+        
+        toast.info("Payment already verified!");
+        
+        // Fetch the existing payment from backend
+        try {
+          console.log("📥 Fetching existing payment for orderId:", orderId);
+          
+          const existingPayment = await paymentService.getPaymentByOrderId(orderId);
+          
+          console.log("✅ Existing payment found:", existingPayment);
+          
+          if (existingPayment && 
+              existingPayment.paymentStatus === "COMPLETED" && 
+              isMountedRef.current) {
+            
+            setPaymentSuccess(true);
+            
+            // Send complete Payment entity to parent
+            if (onSuccess) {
+              onSuccess(existingPayment);
+            }
+            
+            setTimeout(() => {
+              onClose();
+            }, 1000);
+          } else {
+            throw new Error("Invalid payment data");
+          }
+        } catch (fetchErr) {
+          console.error("❌ Failed to fetch existing payment:", fetchErr);
+          toast.error("Could not verify payment. Refreshing page...");
+          
+          setTimeout(() => {
+            onClose();
+            window.location.reload();
+          }, 1500);
+        }
+      } else {
+        // Other errors
+        setError(errorMessage || "Failed to initialize payment");
+        toast.error("Payment initialization failed");
+      }
+      
+      if (isMountedRef.current) {
+        setIsProcessing(false);
+      }
+    }
   };
 
-  if (showSuccess) {
-    return (
-      <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-        <Card className="bg-white max-w-lg w-full shadow-2xl">
-          <CardContent className="pt-8 text-center">
-            <div className="w-20 h-20 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-6">
-              <CheckCircle2 className="w-10 h-10 text-white" />
-            </div>
-            <h2 className="text-2xl font-bold mb-2">Payment Successful!</h2>
-            <p className="text-gray-600 mb-4">
-              ₹{amount.toFixed(2)} paid successfully
-            </p>
-            <p className="text-sm text-gray-500">Order ID: {orderId}</p>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
-  // If not authenticated, show login prompt
-  if (!isAuthenticated) {
-    return (
-      <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-        <Card className="bg-white max-w-md w-full shadow-2xl">
-          <CardContent className="p-6 text-center">
-            <div className="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Shield className="w-8 h-8 text-yellow-600" />
-            </div>
-            <h2 className="text-xl font-bold mb-2">Authentication Required</h2>
-            <p className="text-gray-600 mb-6">
-              You need to be logged in to complete this payment.
-            </p>
-            <div className="space-y-3">
-              <Button
-                className="w-full bg-slate-900 text-yellow-400 hover:bg-slate-800"
-                onClick={() => {   
-                  // You might want to redirect to login page
-                  // or trigger a login modal
-                  onClose(); // Close payment modal first
-                  // Then navigate to login or show login modal
-                  window.location.href = "/login";
-                  window.location.reload();
-                }}
-              >
-                Login to Continue
-              </Button>
-              <Button
-                variant="outline"
-                className="w-full"
-                onClick={onClose}
-              >
-                Cancel
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
-  // If authenticated, show payment form
   return (
-    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-      <Card className="bg-white max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-2xl">
-        {/* Header */}
-        <div className="sticky top-0 bg-white border-b p-4 flex justify-between items-center">
-          <div>
-            <h2 className="text-xl font-bold">Complete Payment</h2>
-            <p className="text-sm text-gray-600">Order ID: {orderId}</p>
-          </div>
-          <button 
-            onClick={onClose}
-            className="p-1 hover:bg-gray-100 rounded"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-
-        <CardContent className="p-6">
-          {/* Amount */}
-          <div className="mb-6 p-4 bg-indigo-50 rounded-lg">
-            <p className="text-sm text-gray-600">Amount to Pay</p>
-            <p className="text-3xl font-bold bg-linear-to-r from-yellow-600 to-yellow-600 bg-clip-text text-transparent">
-              ₹{amount.toFixed(2)}
-            </p>
-          </div>
-
-          {/* Payment Methods */}
-          <div className="grid grid-cols-3 gap-3 mb-6">
-            {paymentMethods.map((m) => (
-              <button
-                key={m.id}
-                onClick={() => setSelectedMethod(m.id)}
-                className={`p-4 rounded-xl border-2 ${
-                  selectedMethod === m.id
-                    ? "border-yellow-500 bg-yellow-50"
-                    : "border-gray-200 hover:border-gray-300"
-                } transition-colors`}
-              >
-                <m.icon className={`w-6 h-6 mx-auto mb-2 ${
-                  selectedMethod === m.id ? "text-yellow-600" : "text-gray-600"
-                }`} />
-                <p className={`text-sm font-medium ${
-                  selectedMethod === m.id ? "text-yellow-700" : "text-gray-700"
-                }`}>
-                  {m.name}
-                </p>
-              </button>
-            ))}
-          </div>
-
-          <Separator className="my-6" />
-
-          {/* UPI */}
-          {selectedMethod === "upi" && (
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="upi-id">UPI ID</Label>
-                <Input
-                  id="upi-id"
-                  value={upiId}
-                  onChange={(e) => setUpiId(e.target.value)}
-                  placeholder="yourname@upi"
-                />
+    <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center z-[999] p-4">
+      <Card className="w-full max-w-md border-0 shadow-2xl overflow-hidden bg-white rounded-3xl">
+        <div className="h-1.5 bg-yellow-400 w-full" />
+        <CardContent className="p-0">
+          {/* Header */}
+          <div className="p-6 flex justify-between items-center border-b border-slate-100">
+            <div className="flex items-center gap-2">
+              <div className="p-2 bg-slate-100 rounded-lg">
+                <Lock className="w-4 h-4 text-slate-600" />
               </div>
-              <div className="text-xs text-gray-500">
-                Enter your UPI ID or scan a QR code
-              </div>
+              <h2 className="font-bold text-slate-900">Secure Checkout</h2>
             </div>
-          )}
-
-          {/* CARD */}
-          {selectedMethod === "card" && (
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="card-number">Card Number</Label>
-                <Input
-                  id="card-number"
-                  placeholder="1234 5678 9012 3456"
-                  value={cardNumber}
-                  onChange={(e) => setCardNumber(e.target.value)}
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="card-expiry">Expiry Date</Label>
-                  <Input
-                    id="card-expiry"
-                    placeholder="MM/YY"
-                    value={cardExpiry}
-                    onChange={(e) => setCardExpiry(e.target.value)}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="card-cvv">CVV</Label>
-                  <Input
-                    id="card-cvv"
-                    placeholder="123"
-                    value={cardCvv}
-                    onChange={(e) => setCardCvv(e.target.value)}
-                    type="password"
-                  />
-                </div>
-              </div>
-              <div>
-                <Label htmlFor="card-name">Cardholder Name</Label>
-                <Input
-                  id="card-name"
-                  placeholder="John Doe"
-                  value={cardName}
-                  onChange={(e) => setCardName(e.target.value)}
-                />
-              </div>
-            </div>
-          )}
-
-          {/* NET BANKING */}
-          {selectedMethod === "netbanking" && (
-            <div className="space-y-2">
-              <Label>Select Your Bank</Label>
-              {popularBanks.map((bank) => (
-                <button
-                  key={bank}
-                  onClick={() => setSelectedBank(bank)}
-                  className={`block w-full p-3 border rounded-lg text-left transition-colors ${
-                    selectedBank === bank
-                      ? "border-yellow-500 bg-yellow-50 text-yellow-700"
-                      : "border-gray-200 hover:bg-gray-50 text-gray-700"
-                  }`}
-                >
-                  {bank}
-                </button>
-              ))}
-            </div>
-          )}
-
-          {/* Security Note */}
-          <div className="mt-6 p-4 bg-gray-50 rounded-lg flex items-start gap-3">
-            <Shield className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-            <p className="text-sm text-gray-600">
-              Your payment is secured with 256-bit SSL encryption. We do not store your card details.
-            </p>
-          </div>
-
-          {/* Buttons */}
-          <div className="mt-6 flex gap-3">
-            <Button 
-              variant="outline" 
+            <button 
               onClick={onClose} 
-              className="flex-1 border-gray-300 hover:bg-gray-50"
-            >
-              Cancel
-            </Button>
-            <Button 
-              onClick={handlePayment} 
               disabled={isProcessing}
-              className="flex-1 bg-green-600 hover:bg-green-700 text-white disabled:bg-green-400"
+              className="text-slate-400 hover:text-slate-900 transition-colors disabled:opacity-50"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+
+          {/* Amount Display */}
+          <div className="p-8 text-center bg-slate-50/50">
+            <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">
+              Total Amount Due
+            </span>
+            <div className="text-4xl font-black text-slate-900 mt-1">
+              ₹{safeAmount.toFixed(2)}
+            </div>
+            <div className="mt-2 text-[10px] font-mono text-slate-500 uppercase">
+              Order ID: {orderId}
+            </div>
+          </div>
+
+          {/* Info & Action */}
+          <div className="p-6 space-y-4">
+            <div className="flex items-center gap-3 p-3 rounded-xl bg-blue-50/50 border border-blue-100">
+              <Shield className="w-5 h-5 text-blue-600 flex-shrink-0" />
+              <p className="text-xs text-blue-700 leading-tight">
+                Protected by 256-bit SSL encryption. Your payment info is handled securely by Razorpay.
+              </p>
+            </div>
+
+            <Button 
+              onClick={handlePayment}
+              disabled={isProcessing || paymentSuccess || !safeAmount}
+              className={`w-full h-14 text-base font-black transition-all shadow-lg rounded-xl ${
+                paymentSuccess 
+                ?"bg-slate-900 hover:bg-slate-800 text-yellow-400" 
+                : "bg-slate-900 hover:bg-slate-800 text-yellow-400"
+              }`}
             >
               {isProcessing ? (
-                <span className="flex items-center justify-center gap-2">
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  Processing...
+                <span className="flex items-center gap-2">
+                  <Loader2 className="w-5 h-5 animate-spin" /> Processing...
                 </span>
-              ) : `Pay ₹${amount.toFixed(2)}`}
+              ) : paymentSuccess ? (
+                <span className="flex items-center gap-2">
+                  <CheckCircle2 className="w-5 h-5" /> Verified
+                </span>
+              ) : (
+                <span className="flex items-center gap-2">
+                  <CreditCard className="w-5 h-5" /> Pay Now
+                </span>
+              )}
             </Button>
+            
+            {error && (
+              <p className="text-center text-xs text-red-500 font-bold bg-red-50 p-2 rounded-lg">
+                {error}
+              </p>
+            )}
+
+            <p className="text-center text-[10px] text-slate-400 uppercase tracking-wide">
+              Powered by Razorpay
+            </p>
           </div>
         </CardContent>
       </Card>
