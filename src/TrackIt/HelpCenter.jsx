@@ -190,32 +190,40 @@ export function HelpCenter() {
     return "Thanks for your message! I'm here to help with tracking, deliveries, returns, and account questions. Could you please provide more details about what you need help with? Or if you prefer, you can speak with a human agent by calling 1-800-872-2548.";
   };
 
-  const handleSendMessage = () => {
-    if (!inputMessage.trim()) return;
+const handleSendMessage = async (messageToSend) => {
+  // ✅ Fix Error 1: Check if messageToSend is a string or event object
+  const messageText = typeof messageToSend === "string" 
+    ? messageToSend 
+    : inputMessage;
 
-    const userMsg = {
-      id: chatMessages.length + 1,
-      type: "user",
-      message: inputMessage,
+  if (!messageText.trim()) return;
+
+  const userMessage = {
+    id: Date.now(),
+    type: "user",
+    message: messageText,
+    timestamp: new Date(),
+  };
+
+  setChatMessages(prev => [...prev, userMessage]);
+  setInputMessage("");
+  setIsTyping(true);
+
+  // ✅ Use your existing getBotResponse (no API key needed)
+  setTimeout(() => {
+    const botResponse = getBotResponse(messageText);
+
+    const botMessage = {
+      id: Date.now() + 1,
+      type: "bot",
+      message: botResponse,
       timestamp: new Date(),
     };
 
-    setChatMessages((prev) => [...prev, userMsg]);
-    setInputMessage("");
-    setIsTyping(true);
-
-    // Simulate bot typing delay
-    setTimeout(() => {
-      const botResponse = {
-        id: chatMessages.length + 2,
-        type: "bot",
-        message: getBotResponse(inputMessage),
-        timestamp: new Date(),
-      };
-      setChatMessages((prev) => [...prev, botResponse]);
-      setIsTyping(false);
-    }, 1000 + Math.random() * 1000); // Random delay 1-2 seconds
-  };
+    setChatMessages(prev => [...prev, botMessage]);
+    setIsTyping(false);
+  }, 1000);
+};
 
   const handleKeyPress = (e) => {
     if (e.key === "Enter" && !e.shiftKey) {
