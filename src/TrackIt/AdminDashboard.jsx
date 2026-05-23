@@ -491,7 +491,7 @@ export default function AdminDashboard() {
               <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-4">
                 <div>
                   <h1 className="text-3xl lg:text-4xl font-bold text-slate-900">
-                    Admin Analytics Dashboard
+                    Admin Analytics <span className="text-yellow-500">Dashboard</span>
                   </h1>
                   <p className="text-slate-500 mt-2">
                     Real-time logistics performance network

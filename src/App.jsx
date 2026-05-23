@@ -20,7 +20,7 @@ import ContactSupport from "./TrackIt/ContactSupport";
 import ReportIssue from "./TrackIt/ReportIssue";
 import { SupportPortal } from "./TrackIt/SupportPortal";
 import { NotificationFeed } from "./TrackIt/NotificationFeed";
-
+import QRScanner from "./TrackIt/QRScanner";
 import { Toaster } from "sonner";
 import "./index.css";
 
@@ -112,7 +112,7 @@ function AppRoutes() {
       <Routes>
         {/* ✅ Home Route - Redirects logged-in users */}
         <Route path="/" element={<HomeRoute />} />
-
+        <Route path="/scan" element={<QRScanner />} />
         {/* ✅ Login Route - Redirects logged-in users */}
         <Route
           path="/login"
