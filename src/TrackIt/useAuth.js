@@ -14,7 +14,7 @@ export const useAuth = create(
       token: null,
       isAuthenticated: false,
 
-      // ✅ LOGIN
+      //  LOGIN
       login: async (email, password) => {
         try {
           const response = await authService.login(email, password);
